@@ -1,0 +1,177 @@
+"use client";
+
+import { ArrowLeft, Clapperboard, Heart, MessageSquare } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+
+import { FilmStage } from "@/components/film/FilmStage";
+import { GoldRule } from "@/components/motion/GoldRule";
+import { Reveal } from "@/components/motion/Reveal";
+import { ReviewForm } from "@/components/reviews/ReviewForm";
+import { ReviewList } from "@/components/reviews/ReviewList";
+import { RatingSummary } from "@/components/reviews/RatingSummary";
+import { feature } from "@/content/trailers";
+import { RELEASE_AT, film } from "@/content/film";
+import { useIsomorphicLayoutEffect } from "@/lib/motion";
+
+/** Every review on this page is for the feature; nothing else is rated yet. */
+const REVIEW_TARGET = "film";
+
+/**
+ * Player (or poster + countdown), title bar with a back arrow above it,
+ * reviews, then the three-up strip.
+ */
+export default function FilmPage() {
+  // Bumped after a successful submit so RatingSummary/ReviewList refetch
+  // without the three components needing a shared store (RAPID §0: no new
+  // abstractions for something used once, on one page).
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  /**
+   * Reviews open when the film does — the same `RELEASE_AT` the countdown
+   * uses, so the clock on the page and the state of the form can never
+   * disagree.
+   *
+   * This is presentation only. The enforcement is the insert policy, which
+   * carries the same instant and returns `42501 new row violates row-level
+   * security policy` to anything that tries early — including a hand-rolled
+   * fetch from the console. Treating this check as the control would be
+   * exactly the mistake the schema header warns about.
+   *
+   * Starts `true` and is corrected on the client, rather than being read
+   * straight from `Date.now()` during render. Two reasons, and the first is
+   * a bug this shape actually had:
+   *
+   *   1. This route is statically prerendered. `Date.now()` in the render
+   *      body is evaluated at BUILD time, so `locked: true` would be baked
+   *      into the HTML and the page would still be locked on the 16th —
+   *      unlocking only on the next deploy. Caught by driving the page with
+   *      a faked clock: React threw hydration error #418 because the built
+   *      HTML said locked and the client said open.
+   *   2. Seeding from the real clock on the client while the server sends
+   *      build-time HTML is the same mismatch by another route. Starting
+   *      from a constant makes the first client render identical to the
+   *      server's by construction, and the correction lands in a layout
+   *      effect — before paint, so there is no visible flash of the lock.
+   *
+   * Read once on mount, never on a timer: the lock lifts on the next page
+   * load after the timestamp, never mid-session. A form that materialises
+   * under someone at midnight is a worse surprise than one they refresh into.
+   */
+  const [locked, setLocked] = useState(true);
+  useIsomorphicLayoutEffect(() => {
+    setLocked(Date.now() < RELEASE_AT.getTime());
+  }, []);
+
+  return (
+    <main className="pt-(--nav-h)">
+      <div className="mx-auto max-w-5xl px-6 py-10 sm:px-10">
+        <Reveal>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              aria-label="Back to Home"
+              className="text-mid hover:text-hi ease-cinema dur-fast flex size-9 items-center justify-center transition-colors"
+            >
+              <ArrowLeft className="size-5" aria-hidden="true" />
+            </Link>
+            <span className="font-display text-body-lg text-hi">
+              {film.title} — {film.subtitle}
+            </span>
+          </div>
+        </Reveal>
+
+        {/* Poster + countdown until `feature.url` is real, player after.
+            The swap is data, not code — see FilmStage. */}
+        <Reveal delay={0.08}>
+          <div className="mt-6">
+            <FilmStage url={feature.url} />
+          </div>
+        </Reveal>
+
+        {/* ---- Reviews --------------------------------------------------- */}
+        <div id="reviews" className="border-hairline mt-16 border-t pt-12">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <Reveal>
+                <h2 className="font-display text-display-md text-gold uppercase">Reviews</h2>
+              </Reveal>
+              <GoldRule className="mt-5" />
+            </div>
+            {/* Hidden while locked. "4.6 ★ (0 Reviews)" against an empty
+                table reads as a broken feature rather than as an unreleased
+                one, and the honest answer to "how is it rated" before anyone
+                has seen it is to not ask. */}
+            {locked ? null : (
+              <Reveal direction="left">
+                <RatingSummary target={REVIEW_TARGET} refreshKey={refreshKey} />
+              </Reveal>
+            )}
+          </div>
+
+          {locked ? (
+            <Reveal delay={0.08}>
+              {/* No stars, no pills, no textarea, no submit — and nothing
+                  that could call `ensureAnonSession()`. There is no
+                  interaction to have, so no MAU should be spent getting
+                  ready for one. No second countdown either; the one above
+                  the fold is the page's clock. */}
+              <div className="glass border-gold-dim/60 mt-8 rounded-lg border p-6 text-center sm:p-8">
+                <p className="text-hi text-body-lg">
+                  Reviews open when the film does.
+                </p>
+              </div>
+            </Reveal>
+          ) : (
+            <>
+              <Reveal delay={0.08}>
+                <div className="mt-8">
+                  <ReviewForm
+                    target={REVIEW_TARGET}
+                    onSubmitted={() => setRefreshKey((k) => k + 1)}
+                  />
+                </div>
+              </Reveal>
+
+              <Reveal delay={0.12}>
+                <div className="mt-6">
+                  <ReviewList target={REVIEW_TARGET} refreshKey={refreshKey} />
+                </div>
+              </Reveal>
+            </>
+          )}
+        </div>
+
+        <Reveal delay={0.1}>
+          <div className="border-hairline mt-16 grid gap-8 border-t pt-12 sm:grid-cols-3">
+            <div className="flex items-start gap-4">
+              <Heart className="text-mid mt-0.5 size-5 shrink-0" aria-hidden="true" />
+              <div>
+                <p className="text-hi text-body-sm font-semibold">Love the film?</p>
+                <p className="text-mid text-body-sm mt-1">
+                  Show your support by liking it.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <MessageSquare className="text-mid mt-0.5 size-5 shrink-0" aria-hidden="true" />
+              <div>
+                <p className="text-hi text-body-sm font-semibold">Have feedback?</p>
+                <p className="text-mid text-body-sm mt-1">We read every review.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <Clapperboard className="text-mid mt-0.5 size-5 shrink-0" aria-hidden="true" />
+              <div>
+                <p className="text-hi text-body-sm font-semibold">Help us improve</p>
+                <p className="text-mid text-body-sm mt-1">
+                  Your words matter to the crew.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </main>
+  );
+}

@@ -1,0 +1,464 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ============================================================================
+   VIPĀKA — DESIGN TOKENS
+   Single source of truth. Tailwind v4 is CSS-first: there is no
+   tailwind.config.ts in this repo. Everything below is defined once here and
+   reaches the app two ways at the same time:
+
+     @theme  →  generates utilities   (bg-surface-2, text-gold, ease-cinema)
+             →  and emits CSS vars    (var(--color-gold))
+
+   The :root block further down re-exports those under the exact names used in
+   CLAUDE.md §3 (var(--gold), var(--ease-cinema), var(--dur-base)) so raw CSS —
+   the .glass recipe, keyframes, GSAP reads — matches the spec verbatim.
+   Aliases only. Never redefine a literal value in two places.
+   ========================================================================= */
+
+/* The site is permanently dark. There is no light theme and no toggle. The
+   `dark` variant exists only so shadcn primitives resolve their dark branch. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* --- Surfaces — layered blacks. #030304 is the floor; nothing is pure #000 */
+  --color-void: #030304;
+  --color-surface-1: #0a0a0c;
+  --color-surface-2: #121215;
+  --color-surface-3: #1a1a1f;
+
+  /* --- Gold — the only accent.
+     Budget: roughly one gold element per viewport. A hairline under a heading,
+     OR an active state, OR a CTA. Scarcity is the whole effect. */
+  --color-gold: #d4a24c;
+  --color-gold-bright: #f0b429;
+  --color-gold-dim: #8a6b32;
+  --color-gold-glow: rgb(212 162 76 / 0.35);
+
+  /* --- Text.
+     Named hi/mid/low so the utility reads `text-hi`, not `text-text-hi`.
+     CLAUDE.md's --text-hi / --text-mid / --text-low are aliased below. */
+  --color-hi: #f5f3ef; /* headings — warm white, never #FFF */
+  --color-mid: #b8b5ae; /* body */
+  --color-low: #6e6b66; /* meta, timestamps */
+
+  /* --- Glass */
+  --color-glass: rgb(255 255 255 / 0.04);
+  --color-hairline: rgb(255 255 255 / 0.08);
+  --blur-glass: 20px;
+
+  /* --- Typefaces.
+     Two all-caps display faces coexist only if they never share a size class:
+     Bebas is always smaller, wider-tracked and dimmer than the Cinzel it
+     annotates. The scale below enforces that rather than leaving it to
+     per-page judgement. */
+  --font-display: var(--font-cinzel), "Cinzel", Georgia, "Times New Roman", serif;
+  --font-eyebrow: var(--font-bebas), "Bebas Neue", "Oswald", "Arial Narrow", sans-serif;
+  --font-body: var(--font-montserrat), "Montserrat", ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Type scale.
+     Letter-spacing is the aesthetic, but it is not one number. For all-caps,
+     tracking must LOOSEN as size drops: at 6rem, 0.18em reads as broken; at
+     1.4rem it reads as engraved. Cinzel also has a hard floor — below ~1.25rem
+     it stops being legible under wide tracking, and that is Bebas's job. */
+
+  /* Cinzel — page titles, section headings. Never below display-sm. */
+  --text-display-xl: clamp(2.75rem, 7vw, 6rem);
+  --text-display-xl--line-height: 1.02;
+  --text-display-xl--letter-spacing: 0.13em;
+  --text-display-xl--font-weight: 400;
+
+  --text-display-lg: clamp(2.25rem, 5vw, 4rem);
+  --text-display-lg--line-height: 1.06;
+  --text-display-lg--letter-spacing: 0.16em;
+  --text-display-lg--font-weight: 400;
+
+  --text-display-md: clamp(1.75rem, 3.4vw, 2.75rem);
+  --text-display-md--line-height: 1.12;
+  --text-display-md--letter-spacing: 0.18em;
+  --text-display-md--font-weight: 400;
+
+  --text-display-sm: 1.375rem;
+  --text-display-sm--line-height: 1.25;
+  --text-display-sm--letter-spacing: 0.2em;
+  --text-display-sm--font-weight: 500;
+
+  /* Cinzel again — navigation, at both breakpoints. Nav is not a heading, so
+     it takes far less tracking than the display scale; and it is not a label,
+     so it is never Bebas (CLAUDE.md §3). */
+  --text-nav: 0.9375rem;
+  --text-nav--line-height: 1;
+  --text-nav--letter-spacing: 0.06em;
+
+  /* The five large links in the mobile overlay. */
+  --text-nav-lg: 1.75rem;
+  --text-nav-lg--line-height: 1.1;
+  --text-nav-lg--letter-spacing: 0.12em;
+
+  /* Bebas Neue — eyebrows, crew roles, stat labels. Labels only. */
+  --text-eyebrow-lg: 1rem;
+  --text-eyebrow-lg--line-height: 1;
+  --text-eyebrow-lg--letter-spacing: 0.35em;
+
+  --text-eyebrow: 0.8125rem;
+  --text-eyebrow--line-height: 1;
+  --text-eyebrow--letter-spacing: 0.35em;
+
+  --text-eyebrow-sm: 0.6875rem;
+  --text-eyebrow-sm--line-height: 1;
+  --text-eyebrow-sm--letter-spacing: 0.3em;
+
+  /* Montserrat — everything you actually read. */
+  --text-body-lg: 1.0625rem;
+  --text-body-lg--line-height: 1.75;
+  --text-body-lg--letter-spacing: 0em;
+
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.75;
+  --text-body--letter-spacing: 0em;
+
+  --text-body-sm: 0.8125rem;
+  --text-body-sm--line-height: 1.65;
+  --text-body-sm--letter-spacing: 0.01em;
+
+  --text-meta: 0.75rem;
+  --text-meta--line-height: 1.4;
+  --text-meta--letter-spacing: 0.08em;
+
+  /* --- Named tracking, for cases the scale does not cover */
+  --tracking-cinzel: 0.18em;
+  --tracking-eyebrow: 0.35em;
+
+  /* --- Motion.
+     Nothing moves linearly. Entrances are slow-out, exits are fast.
+     Generates ease-cinema / ease-glass / ease-snap utilities. */
+  --ease-cinema: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-glass: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-snap: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* --- Animations */
+  --animate-grain: grain 1.2s steps(6, end) infinite;
+  --animate-ambient-scale: ambient-scale 8s ease-in-out infinite alternate;
+  /* Hero scroll cue. Opacity + a small translate only — transform/opacity are
+     the only properties this codebase loops an animation on (CLAUDE.md §4). */
+  --animate-scroll-cue: scroll-cue 1.8s ease-in-out infinite;
+
+  @keyframes grain {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    16.6% {
+      transform: translate3d(-3%, -2%, 0);
+    }
+    33.3% {
+      transform: translate3d(2%, -3%, 0);
+    }
+    50% {
+      transform: translate3d(-2%, 3%, 0);
+    }
+    66.6% {
+      transform: translate3d(3%, 1%, 0);
+    }
+    83.3% {
+      transform: translate3d(-1%, 2%, 0);
+    }
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes ambient-scale {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.04);
+    }
+  }
+
+  @keyframes scroll-cue {
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.35;
+    }
+    50% {
+      transform: translateY(8px);
+      opacity: 1;
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   shadcn/ui semantic bridge.
+   Restyled to dark/gold — the default zinc theme is never shipped (CLAUDE.md §5).
+
+   Two layers, and both are needed. shadcn components use the utilities
+   (`bg-popover`, `border-input`) but several also read the bare custom
+   property directly in an inline style — sonner sets `--normal-bg:
+   var(--popover)`. So the short names are declared in :root below, and
+   `@theme inline` maps them to utilities without a second source of truth.
+   -------------------------------------------------------------------------- */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 10px);
+}
+
+/* ----------------------------------------------------------------------------
+   CLAUDE.md §3 verbatim names, plus the shadcn short names.
+   Aliases, not definitions — every value resolves back to the @theme block.
+   -------------------------------------------------------------------------- */
+:root {
+  --void: var(--color-void);
+  --surface-1: var(--color-surface-1);
+  --surface-2: var(--color-surface-2);
+  --surface-3: var(--color-surface-3);
+
+  --gold: var(--color-gold);
+  --gold-bright: var(--color-gold-bright);
+  --gold-dim: var(--color-gold-dim);
+  --gold-glow: var(--color-gold-glow);
+
+  --text-hi: var(--color-hi);
+  --text-mid: var(--color-mid);
+  --text-low: var(--color-low);
+
+  --glass-bg: var(--color-glass);
+  --glass-border: var(--color-hairline);
+  --glass-blur: var(--blur-glass);
+
+  --dur-fast: 240ms;
+  --dur-base: 520ms;
+  --dur-slow: 900ms;
+  --dur-cinema: 1400ms;
+
+  /* Pointer position for Spotlight / cursor-following glow (Phase 1). */
+  --mx: 50%;
+  --my: 50%;
+
+  /* --- Wordmark fills. The SVG's two paths read these.
+     The shadow is --gold-bright deliberately: the source logo's #FBDE2D is a
+     much more saturated yellow and would read as a second gold sitting beside
+     the hero release date. See CLAUDE.md §6a. */
+  --wordmark-face: var(--color-hi);
+  --wordmark-shadow: var(--color-gold-bright);
+
+  /* Nav height. Exposed so interior pages can offset themselves — the nav is
+     fixed and reserves no space, because the Landing hero runs underneath it. */
+  --nav-h: 4.5rem;
+
+  /* --- shadcn short names. 4px, not shadcn's 10px: this is cinema UI, and
+     softly rounded corners read as SaaS. Nothing here is a new value. */
+  --radius: 4px;
+
+  --background: var(--color-void);
+  --foreground: var(--color-hi);
+
+  --card: var(--color-surface-2);
+  --card-foreground: var(--color-hi);
+  --popover: var(--color-surface-2);
+  --popover-foreground: var(--color-hi);
+
+  --primary: var(--color-gold);
+  --primary-foreground: var(--color-void);
+  --secondary: var(--color-surface-3);
+  --secondary-foreground: var(--color-hi);
+
+  --muted: var(--color-surface-3);
+  --muted-foreground: var(--color-low);
+  --accent: var(--color-surface-3);
+  --accent-foreground: var(--color-gold);
+
+  /* The one colour in the system that is neither black nor gold. Desaturated
+     so it never competes with the accent. */
+  --destructive: #b4423a;
+  --destructive-foreground: var(--color-hi);
+
+  --border: var(--color-hairline);
+  --input: var(--color-hairline);
+  --ring: var(--color-gold);
+}
+
+/* backdrop-filter is the single most expensive thing on this site.
+   Mobile drops to 12px — CLAUDE.md §4 performance guardrails. */
+@media (max-width: 767px) {
+  :root {
+    --glass-blur: 12px;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --nav-h: 5rem;
+  }
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--glass-border);
+    min-width: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    color-scheme: dark;
+    /* The scrollbar gutter is reserved permanently. Without this, every
+       scroll lock — the mobile overlay, the preloader, any dialog — removes
+       the scrollbar and shifts the whole page sideways. CLS target is 0, and
+       that shift is the easiest one to ship by accident. */
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--void);
+    color: var(--text-mid);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* No horizontal scroll, ever — parallax layers overshoot by design. */
+    overflow-x: hidden;
+  }
+
+  /* Gold focus ring on everything interactive — CLAUDE.md §8. */
+  :focus-visible {
+    outline: 2px solid var(--gold-bright);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--gold-glow);
+    color: var(--text-hi);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--void);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+    border: 3px solid var(--void);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--gold-dim);
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   Utilities
+   -------------------------------------------------------------------------- */
+
+/* The glass recipe — CLAUDE.md §4.
+   The `inset 0 1px 0` top highlight is what reads as glass. Do not omit it. */
+@utility glass {
+  background: linear-gradient(145deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.02));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 8px 32px rgb(0 0 0 / 0.6),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+/* The recurring gold hairline. GoldRule (Phase 1) animates scaleX 0 → 1. */
+@utility gold-rule {
+  display: block;
+  height: 2px;
+  width: 120px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--gold) 0%, transparent 100%);
+}
+
+/* Transition-duration shorthands so components never hardcode a ms value.
+   `--tw-duration` is set alongside so these compose with Tailwind's own
+   `transition-*` utilities regardless of source order. */
+@utility dur-fast {
+  --tw-duration: var(--dur-fast);
+  transition-duration: var(--dur-fast);
+}
+@utility dur-base {
+  --tw-duration: var(--dur-base);
+  transition-duration: var(--dur-base);
+}
+@utility dur-slow {
+  --tw-duration: var(--dur-slow);
+  transition-duration: var(--dur-slow);
+}
+@utility dur-cinema {
+  --tw-duration: var(--dur-cinema);
+  transition-duration: var(--dur-cinema);
+}
+
+/* Applied on hover-intent, removed after. Never left on permanently. */
+@utility promote {
+  will-change: transform, opacity;
+}
+
+/* ----------------------------------------------------------------------------
+   Reduced motion — CLAUDE.md §2 rule 4.
+   The page must end up static but COMPLETE: nothing may rely on an animation
+   to become visible, so we neutralise duration rather than cancel animations.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  /* Framer Motion animates via inline styles, which the duration override
+     above cannot touch — a `whileInView` element below the fold would sit at
+     `opacity: 0` until scrolled to, so the page would be static but NOT
+     complete. Every animated primitive carries `data-reveal`; this puts them
+     all back unconditionally, including during the hydration frame before the
+     components themselves notice the preference. */
+  [data-reveal],
+  [data-reveal] * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
