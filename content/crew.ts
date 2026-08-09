@@ -87,13 +87,47 @@ export type SocialLink = {
   href: string;
 };
 
-// TODO(facts): real handles and addresses required.
+// TODO(facts): real handles and addresses required. Until they arrive every
+// one of these is a bare domain, and `isSocialConfigured` renders them inert
+// rather than shipping links to instagram.com's homepage.
 export const socials: readonly SocialLink[] = [
   { id: "instagram", label: "Instagram", href: "https://instagram.com/" },
   { id: "email", label: "Email", href: "mailto:" },
   { id: "youtube", label: "YouTube", href: "https://youtube.com/" },
   { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/" },
 ] as const;
+
+/**
+ * Whether a social entry points at an actual account.
+ *
+ * A placeholder in this file is not blank — it is a bare domain, which is a
+ * perfectly valid URL and therefore renders as a perfectly working link to
+ * somebody else's front page. That is worse than no icon: it looks
+ * deliberate, and a visitor who taps it lands on instagram.com logged into
+ * their own account with no idea what went wrong.
+ *
+ * The test is "is there anything after the domain", not a list of known
+ * placeholder strings — so the moment a real handle is pasted in above, every
+ * footer, menu and contact row turns itself back on with no other edit.
+ */
+export function isSocialConfigured(href: string): boolean {
+  const value = href.trim();
+  if (!value) return false;
+
+  // `mailto:` / `tel:` carry their target in the path, not a host.
+  const scheme = value.match(/^(mailto|tel):(.*)$/i);
+  if (scheme) return scheme[2].trim().length > 0;
+
+  try {
+    const url = new URL(value);
+    // "https://instagram.com/" → pathname "/", nothing else. A real profile
+    // always has a handle, a query, or both.
+    return url.pathname.replace(/\/+$/, "").length > 0 || url.search.length > 0;
+  } catch {
+    // Not parseable as a URL at all — treat as unset rather than render it.
+    return false;
+  }
+}
 
 /* ---------------------------------------------------------------------------
    ⚠ STILL OPEN — must be answered before launch, not at launch.

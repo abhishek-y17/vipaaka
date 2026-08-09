@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 
 import { DatadorksMark } from "@/components/brand/DatadorksMark";
 import { SOCIAL_GLYPH } from "@/components/brand/SocialIcons";
-import { socials } from "@/content/crew";
+import { isSocialConfigured, socials } from "@/content/crew";
 import { isNavItemActive, nav } from "@/content/nav";
 import {
   DUR,
@@ -168,6 +168,20 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
           <div className="border-hairline flex items-center justify-center gap-5 border-t px-8 py-8">
             {socials.map((social) => {
               const Glyph = SOCIAL_GLYPH[social.id];
+              // Inert until a real handle lands — see Footer.tsx. Keeping it
+              // out of the focus trap matters more here than anywhere: this
+              // menu cycles Tab, and four dead stops is four wasted presses.
+              if (!isSocialConfigured(social.href)) {
+                return (
+                  <span
+                    key={social.id}
+                    aria-hidden="true"
+                    className="border-hairline/60 text-low/50 flex size-12 items-center justify-center rounded-full border"
+                  >
+                    <Glyph className="size-5" />
+                  </span>
+                );
+              }
               return (
                 <a
                   key={social.id}

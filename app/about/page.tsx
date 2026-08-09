@@ -92,7 +92,12 @@ export default function AboutPage() {
               priority
               placeholder="blur"
               blurDataURL={stills.stairwell.blurDataURL}
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              // Measured, not assumed: at 1440 this column renders 502px, not
+              // the 720 that `50vw` claims. The container is max-w-6xl minus
+              // px-10 minus a gap-16, halved — so the declared size is a
+              // constant, and the browser stops fetching a size larger than
+              // the slot can ever be.
+              sizes="(max-width: 640px) calc(100vw - 3rem), (max-width: 1024px) calc(100vw - 5rem), 504px"
               className="h-full w-full object-cover"
             />
           </div>
@@ -141,7 +146,8 @@ export default function AboutPage() {
               height={stills.restaurant.height}
               placeholder="blur"
               blurDataURL={stills.restaurant.blurDataURL}
-              sizes="(max-width: 896px) 100vw, 896px"
+              // max-w-4xl (896) less px-10 either side = 816, measured 814.
+              sizes="(max-width: 640px) calc(100vw - 3rem), (max-width: 896px) calc(100vw - 5rem), 816px"
               className="h-auto w-full"
             />
           </figure>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { RELEASE_AT } from "@/content/film";
+import { RELEASE_AT, film } from "@/content/film";
 import { useReducedMotion } from "@/lib/motion";
 
 /**
@@ -77,7 +77,26 @@ export function ReleaseCountdown() {
     return () => window.clearInterval(id);
   }, [reduced]);
 
-  if (now === null) return null;
+  /**
+   * Before hydration — which is the whole of the server-rendered HTML, and
+   * everything a crawler or a no-JS visitor ever sees — this renders the date
+   * in plain text instead of nothing.
+   *
+   * It used to `return null`, which was correct about hydration (a clock
+   * rendered on the server disagrees with the client by definition) and wrong
+   * about everything else: the deployed markup went straight from the poster
+   * to the Reviews heading, so the single most important fact on the page —
+   * when the film comes out — was invisible to Google. Now the static line is
+   * the server render and the live clock replaces it on mount, so the two
+   * renders still match and the date is always in the HTML.
+   */
+  if (now === null) {
+    return (
+      <p className="font-eyebrow text-eyebrow text-hi text-center uppercase">
+        Releasing <time dateTime={film.releaseDate}>{film.releaseDateLong}</time>
+      </p>
+    );
+  }
 
   const r = remainingFrom(now);
 

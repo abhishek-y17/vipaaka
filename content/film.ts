@@ -46,6 +46,8 @@ export type FilmInfo = {
   releaseDate: string;
   /** As typeset in the hero. */
   releaseDateDisplay: string;
+  /** Long form, for prose and the server-rendered pre-hydration line. */
+  releaseDateLong: string;
   releaseYear: number;
   /** Sanskrit epigraph on the banner. */
   epigraph: {
@@ -77,6 +79,7 @@ export const film: FilmInfo = {
 
   releaseDate: "2026-08-15",
   releaseDateDisplay: "15 · 08 · 2026",
+  releaseDateLong: "15 August 2026",
   releaseYear: 2026,
 
   epigraph: {

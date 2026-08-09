@@ -36,8 +36,17 @@ export function DatadorksMark({
       >
         D
       </span>
+      {/* The visible wordmark is decorative for the same reason the monogram
+          is: the `sr-only` span below is the one that carries the accessible
+          name, and without `aria-hidden` here BOTH contribute. The deployed
+          nav link was computing as "DATADORKSDATADORKS — home", because the
+          name is built from the subtree's text and aria-hidden is the only
+          thing that removes a node from it. */}
       {monogramOnly ? null : (
-        <span className="text-hi text-[0.9375rem] leading-none font-semibold tracking-[0.14em]">
+        <span
+          aria-hidden="true"
+          className="text-hi text-[0.9375rem] leading-none font-semibold tracking-[0.14em]"
+        >
           {film.studio}
         </span>
       )}

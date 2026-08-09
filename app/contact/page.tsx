@@ -9,7 +9,7 @@ import { Parallax } from "@/components/motion/Parallax";
 import { Reveal } from "@/components/motion/Reveal";
 import { SplitText } from "@/components/motion/SplitText";
 import { plate } from "@/content/brand";
-import { crew, socials } from "@/content/crew";
+import { crew, isSocialConfigured, socials } from "@/content/crew";
 import { film } from "@/content/film";
 import { STAGGER } from "@/lib/motion";
 import { pageMetadata } from "@/lib/seo";
@@ -121,6 +121,18 @@ export default function ContactPage() {
           <ul className="mt-10 flex items-center justify-center gap-6">
             {socials.map((social) => {
               const Glyph = SOCIAL_GLYPH[social.id];
+              // Inert until a real handle lands — see Footer.tsx. No
+              // MagneticButton either: a mark that pulls toward the cursor is
+              // an invitation, and there is nothing here to accept it.
+              if (!isSocialConfigured(social.href)) {
+                return (
+                  <li key={social.id} aria-hidden="true">
+                    <span className="border-hairline/60 text-low/50 flex size-16 items-center justify-center rounded-full border">
+                      <Glyph className="size-6" />
+                    </span>
+                  </li>
+                );
+              }
               return (
                 <li key={social.id}>
                   {/* White, not gold — CLAUDE.md §3 withheld list names the
