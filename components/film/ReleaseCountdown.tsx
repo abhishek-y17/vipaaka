@@ -67,14 +67,40 @@ export function ReleaseCountdown() {
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
-    setNow(Date.now());
-    const left = RELEASE_AT.getTime() - Date.now();
     // Reduced motion means no ticking digits — the seconds column is the part
     // that reads as animation. It still updates, just once a minute, so the
     // page is never wrong for long without ever being in visible motion.
-    const step = reduced ? MINUTE : left < DAY ? SECOND : MINUTE;
-    const id = window.setInterval(() => setNow(Date.now()), step);
-    return () => window.clearInterval(id);
+    const step = reduced ? MINUTE : SECOND;
+    let id: number | undefined;
+
+    const tick = () => setNow(Date.now());
+
+    const start = () => {
+      // Resync first, then resume. Coming back to a tab that has been hidden
+      // for an hour, the first thing on screen must be the right number, not
+      // the stale one it was paused on until the next tick arrives.
+      tick();
+      id = window.setInterval(tick, step);
+    };
+    const stop = () => {
+      if (id !== undefined) window.clearInterval(id);
+      id = undefined;
+    };
+
+    // A one-second interval in a background tab is pure waste — it keeps the
+    // main thread warm to recompute digits nobody is looking at, and on a
+    // phone that is battery spent on a hidden page. Browsers throttle
+    // background timers but do not stop them.
+    const onVisibility = () => (document.hidden ? stop() : start());
+
+    if (document.hidden) tick();
+    else start();
+
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [reduced]);
 
   /**
@@ -109,23 +135,16 @@ export function ReleaseCountdown() {
     );
   }
 
+  // Seconds show at every range. Days drop away inside the last day, where a
+  // leading "00 DAYS" is noise rather than information.
   const finalDay = r.total < DAY;
 
   return (
-    <div className="flex items-start justify-center gap-8 sm:gap-12">
-      {finalDay ? (
-        <>
-          <Unit value={r.hours} label="Hours" />
-          <Unit value={r.minutes} label="Minutes" />
-          <Unit value={r.seconds} label="Seconds" />
-        </>
-      ) : (
-        <>
-          <Unit value={r.days} label="Days" />
-          <Unit value={r.hours} label="Hours" />
-          <Unit value={r.minutes} label="Minutes" />
-        </>
-      )}
+    <div className="flex items-start justify-center gap-6 sm:gap-10">
+      {finalDay ? null : <Unit value={r.days} label="Days" />}
+      <Unit value={r.hours} label="Hours" />
+      <Unit value={r.minutes} label="Minutes" />
+      <Unit value={r.seconds} label="Seconds" />
     </div>
   );
 }

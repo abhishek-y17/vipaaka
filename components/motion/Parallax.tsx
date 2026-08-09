@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 
-import { registerGsap } from "@/lib/gsap";
+import { loadGsap } from "@/lib/gsap";
 import {
   PARALLAX_SPEED,
   SCRUB,
@@ -60,29 +60,38 @@ export function Parallax({
     const layerEl = layer.current;
     if (reduced || !scopeEl || !layerEl) return;
 
-    const gsap = registerGsap();
+    // GSAP arrives over the network — see lib/gsap.ts. The layer renders at
+    // its resting position meanwhile, so a late arrival costs a late first
+    // scrub, never a jump. `cancelled` covers the unmount-before-load case:
+    // without it the context would be built against a detached node.
+    let cancelled = false;
+    let ctx: gsap.Context | undefined;
 
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        layerEl,
-        { yPercent: -speed / 2 },
-        {
-          yPercent: speed / 2,
-          ease: "none",
-          scrollTrigger: {
-            trigger: scopeEl,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: SCRUB,
-            onToggle: ({ isActive }) =>
-              isActive ? promote(layerEl) : demote(layerEl),
+    void loadGsap().then(({ gsap }) => {
+      if (cancelled) return;
+      ctx = gsap.context(() => {
+        gsap.fromTo(
+          layerEl,
+          { yPercent: -speed / 2 },
+          {
+            yPercent: speed / 2,
+            ease: "none",
+            scrollTrigger: {
+              trigger: scopeEl,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: SCRUB,
+              onToggle: ({ isActive }) =>
+                isActive ? promote(layerEl) : demote(layerEl),
+            },
           },
-        },
-      );
-    }, scopeEl);
+        );
+      }, scopeEl);
+    });
 
     return () => {
-      ctx.revert();
+      cancelled = true;
+      ctx?.revert();
       demote(layerEl);
     };
   }, [reduced, speed]);

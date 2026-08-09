@@ -6,7 +6,7 @@ import { useRef } from "react";
 import { Reveal } from "@/components/motion/Reveal";
 import { storyBeats } from "@/content/film";
 import { stills } from "@/content/stills";
-import { registerGsap } from "@/lib/gsap";
+import { loadGsap } from "@/lib/gsap";
 import {
   SCRUB,
   STAGGER,
@@ -34,28 +34,37 @@ export function SynopsisTimeline() {
     const fillEl = fill.current;
     if (reduced || !scopeEl || !fillEl) return;
 
-    const gsap = registerGsap();
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        fillEl,
-        { scaleY: 0 },
-        {
-          scaleY: 1,
-          ease: "none",
-          scrollTrigger: {
-            trigger: scopeEl,
-            start: "top 75%",
-            end: "bottom 60%",
-            scrub: SCRUB,
-            onToggle: ({ isActive }) =>
-              isActive ? promote(fillEl) : demote(fillEl),
+    // Loaded on demand — see lib/gsap.ts. The spine renders at scaleY(0) from
+    // the inline style below, which is exactly where the animation starts, so
+    // there is nothing to see while the library is in flight.
+    let cancelled = false;
+    let ctx: gsap.Context | undefined;
+
+    void loadGsap().then(({ gsap }) => {
+      if (cancelled) return;
+      ctx = gsap.context(() => {
+        gsap.fromTo(
+          fillEl,
+          { scaleY: 0 },
+          {
+            scaleY: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: scopeEl,
+              start: "top 75%",
+              end: "bottom 60%",
+              scrub: SCRUB,
+              onToggle: ({ isActive }) =>
+                isActive ? promote(fillEl) : demote(fillEl),
+            },
           },
-        },
-      );
-    }, scopeEl);
+        );
+      }, scopeEl);
+    });
 
     return () => {
-      ctx.revert();
+      cancelled = true;
+      ctx?.revert();
       demote(fillEl);
     };
   }, [reduced]);

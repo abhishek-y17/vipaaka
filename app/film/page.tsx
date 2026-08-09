@@ -1,21 +1,79 @@
 "use client";
 
 import { ArrowLeft, Clapperboard, Heart, MessageSquare } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { FilmStage } from "@/components/film/FilmStage";
 import { GoldRule } from "@/components/motion/GoldRule";
 import { Reveal } from "@/components/motion/Reveal";
-import { ReviewForm } from "@/components/reviews/ReviewForm";
-import { ReviewList } from "@/components/reviews/ReviewList";
-import { RatingSummary } from "@/components/reviews/RatingSummary";
 import { feature } from "@/content/trailers";
 import { RELEASE_AT, film } from "@/content/film";
 import { useIsomorphicLayoutEffect } from "@/lib/motion";
 
+/**
+ * The review UI, and through it the entire Supabase client, is code-split out
+ * of the page bundle and fetched only when the review section is actually
+ * approached.
+ *
+ * The saving is not theoretical. Reviews are locked until 15 August, so these
+ * three components currently render nothing at all — but a static import puts
+ * them in the route chunk regardless, so every visitor was downloading and
+ * parsing an auth-capable database client to look at a poster. `ssr: false`
+ * because none of it renders on the server anyway: each one fetches on mount.
+ */
+const RatingSummary = dynamic(
+  () => import("@/components/reviews/RatingSummary").then((m) => m.RatingSummary),
+  { ssr: false },
+);
+const ReviewForm = dynamic(
+  () => import("@/components/reviews/ReviewForm").then((m) => m.ReviewForm),
+  { ssr: false },
+);
+const ReviewList = dynamic(
+  () => import("@/components/reviews/ReviewList").then((m) => m.ReviewList),
+  { ssr: false },
+);
+
 /** Every review on this page is for the feature; nothing else is rated yet. */
 const REVIEW_TARGET = "film";
+
+/**
+ * True once the element has come within a screen of the viewport. Used to
+ * delay the review chunk's network request until it is nearly needed —
+ * `rootMargin` buys roughly one screen of runway so the fetch overlaps the
+ * scroll rather than interrupting it. Fires once and disconnects; this never
+ * needs to become false again.
+ */
+function useNearViewport<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || near) return;
+    // No IntersectionObserver (very old browsers, some crawlers): load
+    // immediately rather than never.
+    if (typeof IntersectionObserver === "undefined") {
+      setNear(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setNear(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "100% 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near]);
+
+  return { ref, near };
+}
 
 /**
  * Player (or poster + countdown), title bar with a back arrow above it,
@@ -63,6 +121,8 @@ export default function FilmPage() {
     setLocked(Date.now() < RELEASE_AT.getTime());
   }, []);
 
+  const { ref: reviewsRef, near: nearReviews } = useNearViewport<HTMLDivElement>();
+
   return (
     <main className="pt-(--nav-h)">
       <div className="mx-auto max-w-5xl px-6 py-10 sm:px-10">
@@ -90,7 +150,11 @@ export default function FilmPage() {
         </Reveal>
 
         {/* ---- Reviews --------------------------------------------------- */}
-        <div id="reviews" className="border-hairline mt-16 border-t pt-12">
+        <div
+          id="reviews"
+          ref={reviewsRef}
+          className="border-hairline mt-16 border-t pt-12"
+        >
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
               <Reveal>
@@ -102,11 +166,11 @@ export default function FilmPage() {
                 table reads as a broken feature rather than as an unreleased
                 one, and the honest answer to "how is it rated" before anyone
                 has seen it is to not ask. */}
-            {locked ? null : (
+            {!locked && nearReviews ? (
               <Reveal direction="left">
                 <RatingSummary target={REVIEW_TARGET} refreshKey={refreshKey} />
               </Reveal>
-            )}
+            ) : null}
           </div>
 
           {locked ? (
@@ -122,7 +186,7 @@ export default function FilmPage() {
                 </p>
               </div>
             </Reveal>
-          ) : (
+          ) : nearReviews ? (
             <>
               <Reveal delay={0.08}>
                 <div className="mt-8">
@@ -139,6 +203,10 @@ export default function FilmPage() {
                 </div>
               </Reveal>
             </>
+          ) : (
+            // Reserves the form's height so the chunk arriving does not shove
+            // the page down under the reader. CLS is 0 today and stays 0.
+            <div className="mt-8 min-h-[19rem]" aria-hidden="true" />
           )}
         </div>
 

@@ -7,7 +7,7 @@ import { useRef } from "react";
 import { Parallax } from "@/components/motion/Parallax";
 import { plate } from "@/content/brand";
 import { film } from "@/content/film";
-import { registerGsap } from "@/lib/gsap";
+import { loadGsap } from "@/lib/gsap";
 import {
   DISTANCE,
   DUR,
@@ -99,30 +99,41 @@ export function Hero({ wordmark }: HeroProps) {
     const title = titleRef.current;
     if (reduced || !section || !title) return;
 
-    const gsap = registerGsap();
+    // Loaded on demand — see lib/gsap.ts. This is the strongest case for it
+    // on the site: the hero's LCP rules above go to some length to keep the
+    // image off React's critical path, and then 111 kB of scroll library was
+    // sitting in the same route chunk that has to parse before hydration.
+    // The title's start state (`scale: 1, opacity: 1`) is what it already
+    // renders as, so nothing moves until the visitor scrolls anyway.
+    let cancelled = false;
+    let ctx: gsap.Context | undefined;
 
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        title,
-        { scale: 1, opacity: 1 },
-        {
-          scale: 1.08,
-          opacity: 0,
-          ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: "bottom top",
-            scrub: SCRUB,
-            onToggle: ({ isActive }) =>
-              isActive ? promote(title) : demote(title),
+    void loadGsap().then(({ gsap }) => {
+      if (cancelled) return;
+      ctx = gsap.context(() => {
+        gsap.fromTo(
+          title,
+          { scale: 1, opacity: 1 },
+          {
+            scale: 1.08,
+            opacity: 0,
+            ease: "none",
+            scrollTrigger: {
+              trigger: section,
+              start: "top top",
+              end: "bottom top",
+              scrub: SCRUB,
+              onToggle: ({ isActive }) =>
+                isActive ? promote(title) : demote(title),
+            },
           },
-        },
-      );
-    }, section);
+        );
+      }, section);
+    });
 
     return () => {
-      ctx.revert();
+      cancelled = true;
+      ctx?.revert();
       demote(title);
     };
   }, [reduced]);
@@ -184,16 +195,28 @@ export function Hero({ wordmark }: HeroProps) {
           {film.heroEyebrow}
         </motion.p>
 
+        {/* The subtitle lives INSIDE the wordmark's box so it can right-align
+            to the logotype's own right edge, the way the key art sets it —
+            rather than centring on the page and ending up wider than the mark
+            it belongs to. Sized well below the wordmark for the same reason:
+            it is a qualifier, not a second title.
+
+            // DECISION: the reference art runs the subtitle at roughly a
+            // third of the wordmark's width. That ratio is only reachable on
+            // a wide banner — at the 220px mobile wordmark a third would be
+            // ~4.5px type. These sizes hold it near half instead, which keeps
+            // the subordinate relationship at every breakpoint without going
+            // under a legible size. */}
         <motion.div className="mt-8 w-[220px] sm:w-[300px] md:w-[380px]" {...seq(1)}>
           {wordmark}
-        </motion.div>
 
-        <motion.p
-          className="font-display text-display-sm text-hi mt-6 uppercase"
-          {...seq(2)}
-        >
-          — {film.subtitle}
-        </motion.p>
+          <motion.p
+            className="font-display text-hi mt-3 text-right text-[0.5rem] tracking-[0.3em] whitespace-nowrap uppercase sm:mt-4 sm:text-[0.625rem] md:text-[0.75rem]"
+            {...seq(2)}
+          >
+            — {film.subtitle}
+          </motion.p>
+        </motion.div>
 
         <motion.p
           className="text-gold-bright font-display text-display-sm mt-10 tracking-[0.3em]"
