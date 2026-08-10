@@ -106,6 +106,54 @@ export default function RootLayout({
     >
       <body className="bg-void text-mid font-body antialiased">
         {/*
+          Reload starts at the top. Nothing else changes.
+
+          The browser's default `history.scrollRestoration` is `auto`, which
+          restores the previous offset on a refresh — so reloading halfway down
+          About dropped you back halfway down About, mid-page, with every
+          entrance above already spent. On a site whose whole premise is a
+          sequence you scroll through, that is the wrong first frame.
+
+          ── Why this is scoped to `reload` and not set globally ─────────────
+          Setting `scrollRestoration = "manual"` for the whole session would
+          fix the refresh and break the thing next to it: back/forward
+          restoration is the same mechanism. Measured before touching this —
+          scrolling Home to 652, navigating to About, then going back returns
+          to 652. That is correct behaviour and it is the browser doing it for
+          free; going manual would mean reimplementing per-entry offset
+          bookkeeping by hand to get back to where we already are.
+
+          So the navigation type decides. `reload` gets manual + top;
+          `back_forward` and `navigate` are left completely alone, and
+          `scrollRestoration` is handed back to `auto` once this load has
+          settled so the next back/forward is native again.
+
+          ── Why it is an inline script and not an effect ────────────────────
+          Restoration happens during load, before React hydrates. An effect
+          would run after the browser had already jumped, producing a visible
+          scroll-back rather than a page that simply starts at the top.
+
+          `location.hash` is respected — a deep link to an anchor is a
+          deliberate request for a position, not a stale offset. And the scroll
+          is `instant` because `html` carries `scroll-behavior: smooth`, which
+          would otherwise animate the correction into view.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{
+if(!("scrollRestoration" in history))return;
+var e=performance.getEntriesByType("navigation")[0];
+if((e&&e.type)!=="reload"||location.hash)return;
+history.scrollRestoration="manual";
+var t=function(){window.scrollTo({top:0,left:0,behavior:"instant"})};
+t();
+addEventListener("DOMContentLoaded",t);
+addEventListener("load",function(){t();requestAnimationFrame(function(){t();history.scrollRestoration="auto"})});
+}catch(_){}})();`,
+          }}
+        />
+
+        {/*
           Framer Motion server-renders entrance states as inline `opacity: 0`.
           Without JS those never resolve and the page is blank, so every
           animated primitive carries `data-reveal` and this puts it back.

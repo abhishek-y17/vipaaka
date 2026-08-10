@@ -163,7 +163,28 @@ export function Hero({ wordmark }: HeroProps) {
           priority
           placeholder="blur"
           blurDataURL={plate.blurDataURL}
-          sizes="100vw"
+          /**
+           * NOT `100vw`, even though the image is full-bleed.
+           *
+           * `sizes` declares the image's LAID-OUT width, and under
+           * `object-cover` that is not the width of the box. The plate is
+           * 2.5:1; a phone is roughly 1:2. Covering a portrait box means
+           * scaling to its HEIGHT and cropping the sides, so the laid-out
+           * width is `viewportHeight × 2.5` — about 2100 CSS px on a 390×844
+           * phone, of which only 391 is visible.
+           *
+           * Declaring `100vw` therefore under-requested by roughly 5×.
+           * Measured on a 390px DPR-3 viewport: the browser picked the 1200w
+           * candidate, so ~222 source pixels were being stretched across 1173
+           * device pixels. The hero — the first thing anyone sees — was soft
+           * on every phone.
+           *
+           * The laid-out width always exceeds the viewport here, and the
+           * master is 1983px, so the honest declaration is simply "as much as
+           * the source has". The optimiser caps at the source width, so this
+           * costs ~13 kB instead of ~3 kB and cannot over-fetch.
+           */
+          sizes="2048px"
           quality={68}
           className="motion-safe:animate-ambient-scale object-cover"
         />
