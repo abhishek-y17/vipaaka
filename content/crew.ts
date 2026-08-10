@@ -96,6 +96,22 @@ export type SocialLink = {
  * not the destination, they are dead weight in the markup, and once indexed
  * they become the canonical URL other people copy. Stripped.
  */
+/**
+ * The real WhatsApp destination. Lives here rather than in the route handler
+ * because every fact belongs in `content/` — the route is plumbing, this is
+ * the number.
+ *
+ * It is deliberately NOT the rendered href. `wa.me/<number>` puts a personal
+ * phone number in the browser's status bar on hover, in the DOM for any
+ * scraper, and in the copied text of "copy link address" — all before anyone
+ * has chosen to contact anybody. `/go/whatsapp` redirects to this, so the
+ * hover preview shows our own domain instead.
+ *
+ * This masks the preview, not the number: it is still visible once the
+ * redirect is followed. That is expected and is the whole scope of it.
+ */
+export const WHATSAPP_URL = "https://wa.me/918147092570";
+
 export const socials: readonly SocialLink[] = [
   {
     id: "instagram",
@@ -104,7 +120,8 @@ export const socials: readonly SocialLink[] = [
   },
   { id: "email", label: "Email", href: "mailto:vipaakathemovie@gmail.com" },
   { id: "youtube", label: "YouTube", href: "https://youtube.com/@vipaaka" },
-  { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/918147092570" },
+  // Local redirect — see WHATSAPP_URL above and app/go/whatsapp/route.ts.
+  { id: "whatsapp", label: "WhatsApp", href: "/go/whatsapp" },
 ] as const;
 
 /**
@@ -130,6 +147,12 @@ export function isSocialConfigured(href: string): boolean {
   // `mailto:` / `tel:` carry their target in the path, not a host.
   const scheme = value.match(/^(mailto|tel):(.*)$/i);
   if (scheme) return scheme[2].trim().length > 0;
+
+  // Root-relative, e.g. the `/go/whatsapp` redirect. `new URL()` throws on
+  // these for want of a base, which would have classed a perfectly good
+  // internal link as unset and rendered the icon inert — the exact failure
+  // this function exists to produce for genuine placeholders.
+  if (value.startsWith("/")) return value.replace(/\/+$/, "").length > 1;
 
   try {
     const url = new URL(value);

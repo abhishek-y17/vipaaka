@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { DatadorksMark } from "@/components/brand/DatadorksMark";
-import { SOCIAL_GLYPH } from "@/components/brand/SocialIcons";
-import { isSocialConfigured, socials } from "@/content/crew";
+import { SocialRow } from "@/components/brand/SocialRow";
+
 import { isNavItemActive, nav } from "@/content/nav";
 import {
   DUR,
@@ -165,36 +165,11 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
             </ul>
           </nav>
 
-          <div className="border-hairline flex items-center justify-center gap-5 border-t px-8 py-8">
-            {socials.map((social) => {
-              const Glyph = SOCIAL_GLYPH[social.id];
-              // Inert until a real handle lands — see Footer.tsx. Keeping it
-              // out of the focus trap matters more here than anywhere: this
-              // menu cycles Tab, and four dead stops is four wasted presses.
-              if (!isSocialConfigured(social.href)) {
-                return (
-                  <span
-                    key={social.id}
-                    aria-hidden="true"
-                    className="border-hairline/60 text-low/50 flex size-16 items-center justify-center rounded-full border"
-                  >
-                    <Glyph className="size-6" />
-                  </span>
-                );
-              }
-              return (
-                <a
-                  key={social.id}
-                  href={social.href}
-                  aria-label={social.label}
-                  target={social.id === "email" ? undefined : "_blank"}
-                  rel={social.id === "email" ? undefined : "noopener noreferrer"}
-                  className="border-hairline text-hi hover:border-gold-dim ease-cinema dur-fast flex size-16 items-center justify-center rounded-full border transition-colors"
-                >
-                  <Glyph className="size-6" />
-                </a>
-              );
-            })}
+          <div className="border-hairline border-t px-8 py-8">
+            {/* Inert placeholders stay out of the focus trap, which matters
+                more here than anywhere: this menu cycles Tab, and four dead
+                stops would be four wasted presses. Handled in SocialRow. */}
+            <SocialRow linkClassName="border-hairline text-hi hover:border-gold-dim ease-cinema dur-fast" />
           </div>
         </motion.div>
       ) : null}

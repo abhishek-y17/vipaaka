@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 
-import { SOCIAL_GLYPH } from "@/components/brand/SocialIcons";
-import { CrewCard } from "@/components/contact/CrewCard";
+import { SocialRow } from "@/components/brand/SocialRow";
 import { GoldRule } from "@/components/motion/GoldRule";
-import { MagneticButton } from "@/components/motion/MagneticButton";
 import { Parallax } from "@/components/motion/Parallax";
 import { Reveal } from "@/components/motion/Reveal";
 import { SplitText } from "@/components/motion/SplitText";
 import { plate } from "@/content/brand";
-import { crew, isSocialConfigured, socials } from "@/content/crew";
 import { film } from "@/content/film";
-import { STAGGER } from "@/lib/motion";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -21,12 +17,13 @@ export const metadata: Metadata = pageMetadata({
 });
 
 /**
- * Contact — ten crew cards, two columns on desktop and one on mobile, then the
+ * Contact — a placeholder note where the crew grid will go, then the
  * "Let's connect" social row.
  *
- * // DECISION: the wave stagger uses column index, not list index, so the two
- * columns offset against each other instead of the right column trailing the
- * left by a full row's worth of delay.
+ * The ten crew cards are written and working but not rendered: every name and
+ * number is still a placeholder, and ten cards reading "Name / +91 00000
+ * 00000" look like a mistake rather than like work in progress. See the note
+ * in the team section, and `crewIsPlaceholder` in `content/crew.ts`.
  */
 export default function ContactPage() {
   return (
@@ -96,15 +93,21 @@ export default function ContactPage() {
           <GoldRule variant="center" width={90} ornament="none" />
         </div>
 
-        <ul className="mt-12 grid gap-5 lg:grid-cols-2">
-          {crew.map((member, i) => (
-            <li key={member.id}>
-              <Reveal delay={(i % 2) * STAGGER.wave + Math.floor(i / 2) * STAGGER.wave}>
-                <CrewCard member={member} />
-              </Reveal>
-            </li>
-          ))}
-        </ul>
+        {/* The ten crew cards are held back until the names and numbers are
+            real. They rendered as "Name / +91 00000 00000" ten times over,
+            which does not read as "coming soon" — it reads as a page shipped
+            without checking. One honest line is better than ten
+            filled-in-looking blanks.
+
+            `content/crew.ts` and `components/contact/CrewCard.tsx` are both
+            untouched and still typed, so restoring the grid is re-adding the
+            imports and the map — not rebuilding it. `crewIsPlaceholder` in
+            crew.ts remains the tripwire for when that is safe. */}
+        <Reveal delay={0.06}>
+          <p className="text-mid text-body-lg mt-10 text-center">
+            Individual crew details will be added soon.
+          </p>
+        </Reveal>
       </section>
 
       {/* ---- Let's connect -------------------------------------------------- */}
@@ -117,52 +120,16 @@ export default function ContactPage() {
           <GoldRule variant="center" width={90} ornament="none" />
         </div>
 
+        {/* Same row as the Footer's, from the same component — so the mailto
+            handling and the /go/whatsapp redirect can never drift between the
+            two. White hover, not gold: CLAUDE.md §3's withheld list names the
+            Contact social buttons explicitly. */}
         <Reveal delay={0.1}>
-          <ul className="mt-10 flex items-center justify-center gap-6">
-            {socials.map((social) => {
-              const Glyph = SOCIAL_GLYPH[social.id];
-              // Inert until a real handle lands — see Footer.tsx. No
-              // MagneticButton either: a mark that pulls toward the cursor is
-              // an invitation, and there is nothing here to accept it.
-              if (!isSocialConfigured(social.href)) {
-                return (
-                  <li key={social.id} aria-hidden="true">
-                    <span className="border-hairline/60 text-low/50 flex size-16 items-center justify-center rounded-full border">
-                      <Glyph className="size-6" />
-                    </span>
-                  </li>
-                );
-              }
-              // White, not gold — CLAUDE.md §3 withheld list names the
-              // Contact social buttons explicitly.
-              const ring =
-                "border-hairline text-hi hover:border-hi/40 ease-cinema dur-base flex size-16 items-center justify-center rounded-full border transition-colors";
-
-              return (
-                <li key={social.id}>
-                  <MagneticButton>
-                    {/* Email is a plain `mailto:` and nothing else — no click
-                        handler, no clipboard, no toast. It hands off to the
-                        visitor's own mail client, which is what a mail link is
-                        supposed to do. No `target`/`rel` on it either: a
-                        protocol handoff is not a navigation, and `_blank`
-                        would strand an empty tab where it does work. */}
-                    <a
-                      href={social.href}
-                      aria-label={social.label}
-                      target={social.id === "email" ? undefined : "_blank"}
-                      rel={
-                        social.id === "email" ? undefined : "noopener noreferrer"
-                      }
-                      className={ring}
-                    >
-                      <Glyph className="size-6" />
-                    </a>
-                  </MagneticButton>
-                </li>
-              );
-            })}
-          </ul>
+          <SocialRow
+            className="mt-10 gap-6"
+            linkClassName="border-hairline text-hi hover:border-hi/40 ease-cinema dur-base"
+            magnetic
+          />
         </Reveal>
       </section>
     </main>

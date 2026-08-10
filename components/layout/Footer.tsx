@@ -2,10 +2,9 @@
 
 import { usePathname } from "next/navigation";
 
-import { SOCIAL_GLYPH } from "@/components/brand/SocialIcons";
+import { SocialRow } from "@/components/brand/SocialRow";
 import { GoldRule } from "@/components/motion/GoldRule";
 import { Reveal } from "@/components/motion/Reveal";
-import { isSocialConfigured, socials } from "@/content/crew";
 import { film } from "@/content/film";
 
 /**
@@ -35,41 +34,7 @@ export function Footer() {
             </Reveal>
 
             <Reveal delay={0.06}>
-              <ul className="mt-10 flex items-center justify-center gap-5">
-                {socials.map((social) => {
-                  const Glyph = SOCIAL_GLYPH[social.id];
-                  // Placeholder handles render as an inert mark: dim, no
-                  // href, no hover, out of the tab order, and hidden from
-                  // assistive tech — announcing "Instagram, link" for
-                  // something that goes nowhere is the same lie in audio.
-                  if (!isSocialConfigured(social.href)) {
-                    return (
-                      <li key={social.id} aria-hidden="true">
-                        <span className="border-hairline/60 text-low/50 flex size-16 items-center justify-center rounded-full border">
-                          <Glyph className="size-6" />
-                        </span>
-                      </li>
-                    );
-                  }
-                  return (
-                    <li key={social.id}>
-                      <a
-                        href={social.href}
-                        aria-label={social.label}
-                        target={social.id === "email" ? undefined : "_blank"}
-                        rel={
-                          social.id === "email"
-                            ? undefined
-                            : "noopener noreferrer"
-                        }
-                        className="border-hairline text-hi hover:border-gold-dim hover:text-gold-bright ease-cinema dur-base flex size-16 items-center justify-center rounded-full border transition-colors"
-                      >
-                        <Glyph className="size-6" />
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
+              <SocialRow className="mt-10" />
             </Reveal>
           </>
         ) : null}
