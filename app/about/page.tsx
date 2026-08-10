@@ -173,6 +173,15 @@ export default function AboutPage() {
             <div className="mt-6 flex justify-center">
               <GoldRule variant="center" width={180} />
             </div>
+            {/* The closing mark, mirroring the opening one exactly — same
+                face, same sizes, same 60% hold. A quote that opens and never
+                closes reads as a missing element rather than as a style. */}
+            <span
+              aria-hidden="true"
+              className="text-gold font-display absolute right-6 bottom-3 text-[4rem] leading-none opacity-60 select-none sm:text-[5rem]"
+            >
+              &rdquo;
+            </span>
           </figure>
         </Reveal>
       </section>

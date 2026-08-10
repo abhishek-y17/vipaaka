@@ -245,6 +245,58 @@ export function Hero({ wordmark }: HeroProps) {
         >
           {film.releaseDateDisplay}
         </motion.p>
+
+        {/* Gita 4.17 — the last beat of the hero sequence, arriving once the
+            title, date and everything above it have settled. `seq(4)` is one
+            `STAGGER.sequence` (200ms) after the date by construction, so the
+            timing is a token rather than a hand-typed delay.
+
+            The quote marks are the About pull-quote's treatment: Cinzel,
+            oversized, gold, held back to 60% so they frame the line rather
+            than competing with it. They are `aria-hidden` and the real
+            quotation lives in a `<blockquote>`, so a screen reader gets the
+            verse once and not a pair of stray punctuation marks.
+
+            Width is set in `ch`, not with hard breaks — a `<br>` that lands
+            beautifully at 1440 snaps in the wrong place at 390. This wraps to
+            roughly three lines on desktop and four on a phone, on its own. */}
+        <motion.figure
+          className="relative mt-10 max-w-[34ch] px-8 sm:mt-12 sm:px-10"
+          {...seq(4)}
+        >
+          <span
+            aria-hidden="true"
+            className="text-gold font-display absolute top-0 left-0 text-[3rem] leading-none opacity-60 select-none sm:text-[4rem]"
+          >
+            &ldquo;
+          </span>
+          <blockquote className="text-mid text-body-sm relative leading-[2] italic sm:text-[0.9375rem]">
+            {film.heroVerse.text}
+          </blockquote>
+          {/* `translate-y` is doing real work here, not nudging.
+
+              Both curly quote glyphs sit near the TOP of their em box — the
+              ink centre lands about 0.22em down, not at 0.5em. The opening
+              mark is therefore correct for free: at `top-0` its ink falls
+              exactly on line one's centre, measured 594 against 594.
+
+              The closing mark gets no such luck. At `bottom-0` the BOX bottom
+              aligns with the text, which puts the ink a full box-height up —
+              two lines at this size — leaving it stranded beside line three
+              while the sentence finished below it.
+
+              Aligning the box centre is not enough either; that was the first
+              attempt and it still read as line three, because a centred box
+              still has its ink 0.28em high. 0.5em is what puts the *ink* on
+              the last line's centre, and being in `em` it holds at both the
+              3rem and 4rem steps without a second hand-tuned value. */}
+          <span
+            aria-hidden="true"
+            className="text-gold font-display absolute right-0 bottom-0 translate-y-[0.5em] text-[3rem] leading-none opacity-60 select-none sm:text-[4rem]"
+          >
+            &rdquo;
+          </span>
+        </motion.figure>
       </div>
 
       <ScrollCue />

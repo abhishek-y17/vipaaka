@@ -9,11 +9,16 @@ import { cn } from "@/lib/utils";
  * then the DATADORKS wordmark.
  *
  * ── Tone ────────────────────────────────────────────────────────────────────
- * Defaults to the **mono** (white) mark. The full-colour version is cyan, and
- * in a black-and-gold palette that is the most saturated thing on screen —
- * sitting top-left of every page, it would pull focus off the film. See the
- * note in `content/brand.ts`. `tone="full"` exists for contexts where
- * Datadorks itself is the subject; nothing in the site chrome qualifies.
+ * Defaults to the **gold** mark — `--gold`, never `--gold-bright`. The bright
+ * tone belongs to CTAs and active state; a mark that sits in the nav on every
+ * page is permanent, and spending the loudest gold on something that never
+ * changes is what stops a state colour reading as state.
+ *
+ * `mono` (white knockout) is the fallback if the gold mark and the gold
+ * active-nav underline ever compete in the same bar. `full` is the cyan
+ * original — the most saturated thing possible in this palette — and exists
+ * only for contexts where Datadorks itself is the subject; nothing in the
+ * site chrome qualifies. See `content/brand.ts`.
  *
  * ── The accessible name is exactly "DATADORKS — home" ───────────────────────
  * One source, and one only: the `sr-only` span. Everything visible is removed
@@ -33,16 +38,26 @@ export type DatadorksMarkProps = {
   className?: string;
   /** Hide the wordmark and show the mark alone. */
   monogramOnly?: boolean;
-  /** `mono` (default) is the white knockout. `full` is the cyan original. */
-  tone?: "mono" | "full";
+  /**
+   * `gold` (default) is `--gold`, never `--gold-bright`. `mono` is the white
+   * knockout, kept as the fallback if the gold mark and the gold active-nav
+   * underline ever compete. `full` is the cyan original, for contexts where
+   * Datadorks itself is the subject.
+   */
+  tone?: "gold" | "mono" | "full";
 };
 
 export function DatadorksMark({
   className,
   monogramOnly = false,
-  tone = "mono",
+  tone = "gold",
 }: DatadorksMarkProps) {
-  const mark = tone === "full" ? datadorks.full : datadorks.mono;
+  const mark =
+    tone === "full"
+      ? datadorks.full
+      : tone === "mono"
+        ? datadorks.mono
+        : datadorks.gold;
 
   return (
     <span className={cn("flex items-center gap-2.5", className)}>

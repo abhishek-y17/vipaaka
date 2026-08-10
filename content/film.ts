@@ -55,6 +55,11 @@ export type FilmInfo = {
     translation: string;
     source: string;
   };
+  /** English verse under the hero title block. */
+  heroVerse: {
+    text: string;
+    source: string;
+  };
   /** Film page pull-quote. */
   pullQuote: string;
   /** Long-form copy for the About page Story Summary block. */
@@ -71,10 +76,9 @@ export const film: FilmInfo = {
   logline:
     "Every action ripens. A short film about the long silence between what we do and what it costs us.",
 
-  // TODO(facts): genre and runtime still to confirm. Language is confirmed.
-  genre: "Drama",
-  runtime: "TBC",
-  runtimeMinutes: 0,
+  genre: "Psychological Drama",
+  runtime: "40 minutes",
+  runtimeMinutes: 40,
   language: "Kannada",
 
   releaseDate: "2026-08-15",
@@ -90,11 +94,27 @@ export const film: FilmInfo = {
     source: "Bhagavad Gita 4.18",
   },
 
+  /**
+   * ⚠ This is **4.17**, while `epigraph` above — the Sanskrit baked into the
+   * banner — is **4.18**. They are consecutive verses and thematically of a
+   * piece (both on the difficulty of telling action from inaction), but they
+   * are not the same line, so this is not a translation of the epigraph and
+   * must not be captioned as one.
+   *
+   * Left as-is deliberately, flagged rather than silently reconciled: making
+   * them match means either re-rendering the banner art or changing the
+   * English, and both are the film-maker's call. Scripture gets noticed.
+   */
+  heroVerse: {
+    text: "One must understand the right action, wrong action and inaction, for the nature of karma is deeply difficult to comprehend.",
+    source: "Bhagavad Gita 4.17",
+  },
+
   pullQuote: "Every story finds its roots in a moment of silence.",
 
   // TODO(copy): placeholder body copy. Structure is right, words are not.
   summary: [
-    "Vipāka means the ripening — the moment a thing done long ago finally arrives at its consequence.",
+    "Vipāka means the ripening, the moment a thing done long ago finally arrives at its consequence.",
     "The film sits in that gap. Not in the act, and not in the reckoning, but in the quiet stretch between them, where a person still believes nothing has happened.",
   ],
 } as const;

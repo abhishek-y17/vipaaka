@@ -124,7 +124,30 @@ export const badge = {
  * every in-page use runs through `next/image` and gets resized on demand.
  */
 export const datadorks = {
-  /** White knockout. Nav, footer, anywhere the film is the subject. */
+  /**
+   * `--gold`, not `--gold-bright`. The bright tone is reserved for CTAs and
+   * active state (CLAUDE.md §3), and a mark that sits in the nav on every
+   * page is permanent by definition — rendering it bright would spend the
+   * loudest gold on something that never changes, which is exactly what makes
+   * a state colour stop reading as state.
+   */
+  gold: {
+    src: "/brand/datadorks-mark-gold.png",
+    width: 977,
+    height: 977,
+    alt: "Datadorks",
+  },
+  /**
+   * Registered for completeness, deliberately unused. If this ever appears in
+   * the nav or footer it is a mistake — see the note on `gold`.
+   */
+  goldBright: {
+    src: "/brand/datadorks-mark-gold-bright.png",
+    width: 977,
+    height: 977,
+    alt: "Datadorks",
+  },
+  /** White knockout. The fallback if two golds in the nav bar ever fight. */
   mono: {
     src: "/brand/datadorks-mark-mono.png",
     width: 977,
