@@ -45,8 +45,8 @@ export function Footer() {
                   if (!isSocialConfigured(social.href)) {
                     return (
                       <li key={social.id} aria-hidden="true">
-                        <span className="border-hairline/60 text-low/50 flex size-12 items-center justify-center rounded-full border">
-                          <Glyph className="size-5" />
+                        <span className="border-hairline/60 text-low/50 flex size-16 items-center justify-center rounded-full border">
+                          <Glyph className="size-6" />
                         </span>
                       </li>
                     );
@@ -62,9 +62,9 @@ export function Footer() {
                             ? undefined
                             : "noopener noreferrer"
                         }
-                        className="border-hairline text-hi hover:border-gold-dim hover:text-gold-bright ease-cinema dur-base flex size-12 items-center justify-center rounded-full border transition-colors"
+                        className="border-hairline text-hi hover:border-gold-dim hover:text-gold-bright ease-cinema dur-base flex size-16 items-center justify-center rounded-full border transition-colors"
                       >
-                        <Glyph className="size-5" />
+                        <Glyph className="size-6" />
                       </a>
                     </li>
                   );

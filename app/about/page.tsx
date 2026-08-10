@@ -61,7 +61,10 @@ export default function AboutPage() {
             className="font-display text-display-lg text-hi uppercase"
           />
           <Reveal delay={0.25}>
-            <p className="font-eyebrow text-eyebrow text-hi mt-5 uppercase">
+            {/* One step up the scale (eyebrow → eyebrow-lg), not a hardcoded
+                size — it was reading undersized against `text-display-lg`
+                above it. The step carries its own tracking with it. */}
+            <p className="font-eyebrow text-eyebrow-lg text-hi mt-5 uppercase">
               A Story Worth Telling
             </p>
           </Reveal>

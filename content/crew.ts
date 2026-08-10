@@ -87,28 +87,41 @@ export type SocialLink = {
   href: string;
 };
 
-// TODO(facts): real handles and addresses required. Until they arrive every
-// one of these is a bare domain, and `isSocialConfigured` renders them inert
-// rather than shipping links to instagram.com's homepage.
+/**
+ * Real, confirmed. All four pass `isSocialConfigured`, so the inert treatment
+ * in Footer / MobileMenu / Contact falls away on its own with no edit there.
+ *
+ * URLs are stored clean. The Instagram and YouTube links arrived carrying
+ * share-sheet tracking (`?utm_source=…`, `?si=…`) — those identify the share,
+ * not the destination, they are dead weight in the markup, and once indexed
+ * they become the canonical URL other people copy. Stripped.
+ */
 export const socials: readonly SocialLink[] = [
-  { id: "instagram", label: "Instagram", href: "https://instagram.com/" },
-  { id: "email", label: "Email", href: "mailto:" },
-  { id: "youtube", label: "YouTube", href: "https://youtube.com/" },
-  { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/" },
+  {
+    id: "instagram",
+    label: "Instagram",
+    href: "https://www.instagram.com/vipaaka_themovie",
+  },
+  { id: "email", label: "Email", href: "mailto:vipaakathemovie@gmail.com" },
+  { id: "youtube", label: "YouTube", href: "https://youtube.com/@vipaaka" },
+  { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/918147092570" },
 ] as const;
 
 /**
  * Whether a social entry points at an actual account.
  *
- * A placeholder in this file is not blank — it is a bare domain, which is a
- * perfectly valid URL and therefore renders as a perfectly working link to
- * somebody else's front page. That is worse than no icon: it looks
- * deliberate, and a visitor who taps it lands on instagram.com logged into
- * their own account with no idea what went wrong.
+ * All four entries above are real now, so this currently returns true for
+ * every one of them and no icon renders inert. It stays because the failure
+ * it guards against is silent and recurs: a placeholder here is not blank, it
+ * is a bare domain — a perfectly valid URL that renders as a perfectly
+ * working link to somebody else's front page. That is worse than no icon. It
+ * looks deliberate, and a visitor who taps it lands on instagram.com logged
+ * into their own account with no idea what went wrong.
  *
  * The test is "is there anything after the domain", not a list of known
- * placeholder strings — so the moment a real handle is pasted in above, every
- * footer, menu and contact row turns itself back on with no other edit.
+ * placeholder strings — so a handle that is emptied or reset to a bare domain
+ * turns its own icon off again, in every footer, menu and contact row, with
+ * no other edit.
  */
 export function isSocialConfigured(href: string): boolean {
   const value = href.trim();

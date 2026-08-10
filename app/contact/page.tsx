@@ -133,21 +133,28 @@ export default function ContactPage() {
                   </li>
                 );
               }
+              // White, not gold — CLAUDE.md §3 withheld list names the
+              // Contact social buttons explicitly.
+              const ring =
+                "border-hairline text-hi hover:border-hi/40 ease-cinema dur-base flex size-16 items-center justify-center rounded-full border transition-colors";
+
               return (
                 <li key={social.id}>
-                  {/* White, not gold — CLAUDE.md §3 withheld list names the
-                      Contact social buttons explicitly. */}
                   <MagneticButton>
+                    {/* Email is a plain `mailto:` and nothing else — no click
+                        handler, no clipboard, no toast. It hands off to the
+                        visitor's own mail client, which is what a mail link is
+                        supposed to do. No `target`/`rel` on it either: a
+                        protocol handoff is not a navigation, and `_blank`
+                        would strand an empty tab where it does work. */}
                     <a
                       href={social.href}
                       aria-label={social.label}
                       target={social.id === "email" ? undefined : "_blank"}
                       rel={
-                        social.id === "email"
-                          ? undefined
-                          : "noopener noreferrer"
+                        social.id === "email" ? undefined : "noopener noreferrer"
                       }
-                      className="border-hairline text-hi hover:border-hi/40 ease-cinema dur-base flex size-16 items-center justify-center rounded-full border transition-colors"
+                      className={ring}
                     >
                       <Glyph className="size-6" />
                     </a>

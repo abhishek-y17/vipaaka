@@ -24,7 +24,7 @@ export type Trailer = {
   poster: string | null;
 };
 
-// TODO(facts): trailer-2's URL and all taglines still needed.
+// TODO(facts): taglines still needed. All three URLs are now real.
 // Durations are confirmed by the client and supersede the mockup's, which were
 // all wrong. The announcement's 02:37 matches what the player reports for the
 // real video, so these are the runtimes, not estimates.
@@ -53,8 +53,15 @@ export const trailers: readonly Trailer[] = [
     id: "trailer-2",
     title: "Trailer 2",
     tagline: "Everything ripens. Nothing is forgotten.",
+    // Confirmed by the client alongside the other two, not taken from the
+    // mockup — the mockup's guess was 02:10. It cannot be verified against
+    // the player until the premiere completes; see the note on `url`.
     duration: "00:58",
-    url: "",
+    // Real, confirmed. Scheduled as a YouTube premiere for 11 Aug 2026 11:11
+    // IST — until then the embed shows YouTube's own premiere waiting screen
+    // with its own countdown, which is a truthful state and needs nothing
+    // from us. It starts playing on its own once the premiere runs.
+    url: "https://youtu.be/WmMQ1LNjwHw",
     poster: null,
   },
 ] as const;

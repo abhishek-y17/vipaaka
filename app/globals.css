@@ -95,10 +95,14 @@
   --text-nav-lg--line-height: 1.1;
   --text-nav-lg--letter-spacing: 0.12em;
 
-  /* Bebas Neue — eyebrows, crew roles, stat labels. Labels only. */
+  /* Bebas Neue — eyebrows, crew roles, stat labels. Labels only.
+     Tracking tightens as the step goes up: letterspacing is compensation for
+     small type, and at 1rem Bebas already has the room it needs. Holding all
+     three steps at 0.35em made the largest one read as spaced-out rather
+     than confident. */
   --text-eyebrow-lg: 1rem;
   --text-eyebrow-lg--line-height: 1;
-  --text-eyebrow-lg--letter-spacing: 0.35em;
+  --text-eyebrow-lg--letter-spacing: 0.32em;
 
   --text-eyebrow: 0.8125rem;
   --text-eyebrow--line-height: 1;

@@ -176,9 +176,9 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                   <span
                     key={social.id}
                     aria-hidden="true"
-                    className="border-hairline/60 text-low/50 flex size-12 items-center justify-center rounded-full border"
+                    className="border-hairline/60 text-low/50 flex size-16 items-center justify-center rounded-full border"
                   >
-                    <Glyph className="size-5" />
+                    <Glyph className="size-6" />
                   </span>
                 );
               }
@@ -189,9 +189,9 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                   aria-label={social.label}
                   target={social.id === "email" ? undefined : "_blank"}
                   rel={social.id === "email" ? undefined : "noopener noreferrer"}
-                  className="border-hairline text-hi hover:border-gold-dim ease-cinema dur-fast flex size-12 items-center justify-center rounded-full border transition-colors"
+                  className="border-hairline text-hi hover:border-gold-dim ease-cinema dur-fast flex size-16 items-center justify-center rounded-full border transition-colors"
                 >
-                  <Glyph className="size-5" />
+                  <Glyph className="size-6" />
                 </a>
               );
             })}

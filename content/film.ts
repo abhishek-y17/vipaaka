@@ -71,11 +71,11 @@ export const film: FilmInfo = {
   logline:
     "Every action ripens. A short film about the long silence between what we do and what it costs us.",
 
-  // TODO(facts): confirm genre, runtime and language.
+  // TODO(facts): genre and runtime still to confirm. Language is confirmed.
   genre: "Drama",
   runtime: "TBC",
   runtimeMinutes: 0,
-  language: "TBC",
+  language: "Kannada",
 
   releaseDate: "2026-08-15",
   releaseDateDisplay: "15 · 08 · 2026",

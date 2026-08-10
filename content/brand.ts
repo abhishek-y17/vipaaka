@@ -101,6 +101,50 @@ export const badge = {
 } as const satisfies Record<string, BrandAsset>;
 
 /* -------------------------------------------------------------------------- */
+/*  The studio mark                                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Datadorks' own mark — the studio, not the film. Square, transparent.
+ *
+ * ── Why the nav and footer get `mono`, not `full` ───────────────────────────
+ * The full-colour mark is cyan. Dropped into a palette that is black, warm
+ * white and one gold, a saturated cyan is the highest-chroma thing on the
+ * page by a wide margin, and it sits top-left of every screen — so the first
+ * colour a visitor's eye lands on is the studio's, not the film's. That
+ * inverts the hierarchy CLAUDE.md §3 spends its whole gold budget building.
+ * The white knockout says the same thing without competing.
+ *
+ * `full` is correct wherever Datadorks itself is the subject rather than the
+ * publisher — the favicon and app icons, where the mark IS the content.
+ *
+ * Only the full-colour version ships pre-scaled (512/192/96/48); those exist
+ * for the icon manifest, which needs real files at exact sizes rather than
+ * anything `next/image` can negotiate. `mono` is a single master because
+ * every in-page use runs through `next/image` and gets resized on demand.
+ */
+export const datadorks = {
+  /** White knockout. Nav, footer, anywhere the film is the subject. */
+  mono: {
+    src: "/brand/datadorks-mark-mono.png",
+    width: 977,
+    height: 977,
+    alt: "Datadorks",
+  },
+  /** Full colour. Favicon, app icons — where Datadorks is the subject. */
+  full: {
+    src: "/brand/datadorks-mark.png",
+    width: 977,
+    height: 977,
+    alt: "Datadorks",
+  },
+  x512: { src: "/brand/datadorks-mark-512.png", width: 512, height: 512, alt: "Datadorks" },
+  x192: { src: "/brand/datadorks-mark-192.png", width: 192, height: 192, alt: "Datadorks" },
+  x96: { src: "/brand/datadorks-mark-96.png", width: 96, height: 96, alt: "Datadorks" },
+  x48: { src: "/brand/datadorks-mark-48.png", width: 48, height: 48, alt: "Datadorks" },
+} as const satisfies Record<string, BrandAsset>;
+
+/* -------------------------------------------------------------------------- */
 /*  Key art                                                                    */
 /* -------------------------------------------------------------------------- */
 

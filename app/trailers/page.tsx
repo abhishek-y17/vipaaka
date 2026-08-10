@@ -22,6 +22,25 @@ import { STAGGER } from "@/lib/motion";
 export default function TrailersPage() {
   const [open, setOpen] = useState<Trailer | null>(null);
 
+  /**
+   * Trailers whose YouTube thumbnail came back 404.
+   *
+   * A video that is scheduled as a premiere and has not gone live yet has no
+   * thumbnail on i.ytimg.com — both `maxresdefault` and `hqdefault` 404 until
+   * the premiere runs. `next/image` then renders a 0×0 broken image inside
+   * the frame and logs an error, so the row loses its poster and keeps the
+   * play ring floating over nothing.
+   *
+   * The empty state below already exists for trailers with no URL at all;
+   * this just makes a failed fetch reach it. Keyed off the actual network
+   * result rather than a hardcoded "trailer 2 has no thumb", so it heals
+   * itself the moment YouTube starts serving the frame — no edit, same as
+   * `isSocialConfigured`.
+   */
+  const [posterFailed, setPosterFailed] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+
   return (
     <main>
       <section className="relative flex h-[38vh] min-h-[280px] items-center justify-center overflow-hidden">
@@ -47,9 +66,12 @@ export default function TrailersPage() {
       <section className="mx-auto max-w-4xl divide-y divide-white/10 border-t border-white/10 px-6 sm:px-10">
         {trailers.map((trailer, i) => {
           const videoId = extractVideoId(trailer.url);
-          const poster =
-            trailer.poster ??
-            (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : null);
+          const poster = posterFailed.has(trailer.id)
+            ? null
+            : (trailer.poster ??
+              (videoId
+                ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+                : null));
 
           return (
             <Reveal key={trailer.id} delay={i * STAGGER.children}>
@@ -66,6 +88,14 @@ export default function TrailersPage() {
                       fill
                       sizes="(max-width: 640px) 100vw, 288px"
                       className="ease-cinema dur-slow object-cover transition-transform group-hover/row:scale-[1.03]"
+                      onError={() =>
+                        setPosterFailed((prev) => {
+                          if (prev.has(trailer.id)) return prev;
+                          const next = new Set(prev);
+                          next.add(trailer.id);
+                          return next;
+                        })
+                      }
                     />
                   ) : (
                     <span className="bg-surface-2 absolute inset-0" />
