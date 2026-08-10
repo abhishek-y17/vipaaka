@@ -38,3 +38,34 @@ yarn-error.log*
 
 # scratch verification scripts
 /*.mjs
+
+# editor / tooling state
+.idea/
+.vscode/
+.claude/
+*.code-workspace
+
+# OS noise
+desktop.ini
+$RECYCLE.BIN/
+
+# ---------------------------------------------------------------------------
+# Internal working documents.
+#
+# These are how the site got built, not part of the site. They carry sprint
+# plans, scope cuts, unresolved TODOs and design mockups that are stale on the
+# film's own title — none of which should be the first thing a visitor to the
+# repository reads, and some of which would be actively misleading.
+#
+# They stay on disk and keep working locally; they are just no longer part of
+# what the repository publishes.
+# ---------------------------------------------------------------------------
+/CLAUDE.md
+
+# Everything under docs/ EXCEPT the database schema. `docs/*` rather than
+# `docs/` on purpose: git will not descend into an excluded directory, so a
+# negation inside one never matches. The schema is the one file here that is
+# operational rather than editorial — it is what recreates the reviews table,
+# its RLS policies and the rate-limit trigger from nothing.
+docs/*
+!docs/SUPABASE_SCHEMA.sql
