@@ -116,11 +116,27 @@ create policy "reviews are readable by everyone"
 -- `to authenticated` matters: an anonymous-auth user IS authenticated — they
 -- hold a real JWT whose `is_anonymous` claim is true. A caller with no session
 -- at all has auth.uid() = null and fails the check outright.
+-- The release gate lives HERE, in the policy, not in the UI.
+--
+-- `content/film.ts` has a matching RELEASE_AT and the /film page hides the
+-- form before it, but that is experience only — a visitor with devtools can
+-- render the form whenever they like. This is the enforcement.
+--
+-- ⚠ These two must carry the SAME instant. If they ever disagree, the one
+-- that hurts is the UI unlocking FIRST: the form accepts a review, submits
+-- it, and the policy rejects it with 42501. A lock that lingers a few minutes
+-- is invisible; a form that fails on submit is not.
+--
+-- 2026-08-15 11:11 IST. This gate was originally applied directly to the
+-- database and was missing from this file entirely, which meant running this
+-- script against a fresh project produced a table with NO release gate at
+-- all. Recorded here now so the file is the source of truth.
 create policy "reviews are insertable by their owner"
   on public.reviews for insert
   to authenticated
   with check (
     anon_id = (select auth.uid())
+    and now() >= timestamptz '2026-08-15 11:11:00+05:30'
     and rating between 1 and 5
     and char_length(coalesce(body, '')) <= 1000
     and char_length(coalesce(display_name, '')) <= 40

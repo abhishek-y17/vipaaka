@@ -21,8 +21,13 @@ import type { StillId } from "@/content/stills";
  * that drifts is always the one nobody is looking at. The database's insert
  * policy carries the same instant (`now() >= '2026-08-15 00:00:00+05:30'`) —
  * that one is the actual enforcement; this one is only the experience.
+ *
+ * 11:11 IST, not midnight. If these two ever disagree, the failure that
+ * matters is the UI unlocking FIRST — that produces a form which accepts a
+ * review, submits it, and is rejected by the policy, which is worse than
+ * either a lock that lingers or a form that is simply absent.
  */
-export const RELEASE_AT = new Date("2026-08-15T00:00:00+05:30");
+export const RELEASE_AT = new Date("2026-08-15T11:11:00+05:30");
 
 export type FilmInfo = {
   studio: string;
