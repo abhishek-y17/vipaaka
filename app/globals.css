@@ -95,11 +95,22 @@
   --text-nav-lg--line-height: 1.1;
   --text-nav-lg--letter-spacing: 0.12em;
 
-  /* Bebas Neue — eyebrows, crew roles, stat labels. Labels only.
+  /* Bebas Neue — eyebrows, crew roles, stat labels, and (from `xl` up)
+     section headings.
      Tracking tightens as the step goes up: letterspacing is compensation for
-     small type, and at 1rem Bebas already has the room it needs. Holding all
-     three steps at 0.35em made the largest one read as spaced-out rather
-     than confident. */
+     small type, and by 1rem Bebas already has the room it needs. Holding
+     every step at 0.35em made the large ones read as spaced-out rather than
+     confident.
+     `2xl` is a heading size, not a label size — it is the only Bebas step
+     that should ever carry an <h2>. */
+  --text-eyebrow-2xl: 1.875rem;
+  --text-eyebrow-2xl--line-height: 1.15;
+  --text-eyebrow-2xl--letter-spacing: 0.24em;
+
+  --text-eyebrow-xl: 1.375rem;
+  --text-eyebrow-xl--line-height: 1.2;
+  --text-eyebrow-xl--letter-spacing: 0.28em;
+
   --text-eyebrow-lg: 1rem;
   --text-eyebrow-lg--line-height: 1;
   --text-eyebrow-lg--letter-spacing: 0.32em;

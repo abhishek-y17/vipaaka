@@ -217,6 +217,14 @@ export const plate: BrandAsset = {
  * hero (see `plate`), right for a link preview: OpenGraph / Twitter card only,
  * never rendered in-page. Social scrapers do not reliably decode AVIF or
  * WebP, so cards need JPEG.
+ *
+ * The 1.6 MB `vipaka-banner.png` master this was generated from is no longer
+ * in `public/`. It was served on every deploy and requested by nothing — only
+ * ever a build-time source — so it was pure deployment weight. It remains in
+ * git history if it is ever needed again:
+ *   `git show 8af396a:public/vipaka-banner.png > banner.png`
+ * Comments elsewhere still cite it as the cautionary example of art with its
+ * own type baked in; that lesson stands whether or not the file ships.
  */
 export const bannerOg: BrandAsset = {
   src: "/vipaka-banner-og.jpg",

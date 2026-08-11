@@ -1,17 +1,17 @@
 /**
- * The ten crew cards on the Contact page — 2 columns desktop, 1 mobile,
- * in the reading order shown in `docs/design/Contact page.png`.
+ * The six people on the Contact page.
  *
- * Names and numbers are placeholders and are meant to be, exactly as the
- * mockup has them: role in gold, `Name`, `+91 00000 00000`. They are here so
- * layout, stagger and hover work can be built and reviewed against something
- * that looks right, not so they can ship.
+ * Real names, real roles, real numbers — supplied and cleared for publication
+ * by the team. This file used to carry ten placeholder cards plus an open
+ * privacy question about publishing personal mobile numbers; that question has
+ * been answered by the people whose numbers they are, so both the placeholders
+ * and the tripwire that guarded them are gone.
  *
- * ⚠ The privacy question these raise is **deferred, not resolved** — see the
- * note at the bottom of this file. It must be answered before launch.
+ * Order is the running order given by the team and is not alphabetical or
+ * hierarchical — do not "tidy" it.
  */
 
-/** Keys map to Lucide icons in the Contact card (Phase 8). */
+/** Keys map to Lucide icons in the Contact card. */
 export type CrewIcon =
   | "armchair"
   | "clapperboard"
@@ -22,58 +22,78 @@ export type CrewIcon =
   | "music"
   | "shirt"
   | "volume-2"
-  | "box";
+  | "box"
+  | "user";
 
 export type CrewMember = {
   id: string;
-  /** Gold, small caps. The role leads the card — the name is secondary. */
-  role: string;
+  /**
+   * Gold, small caps. The role leads the card — the name is secondary.
+   *
+   * Optional: one member has no role yet, and the card omits the line
+   * entirely rather than reserving an empty label, which would read as a
+   * rendering fault rather than as an absence.
+   */
+  role?: string;
   name: string;
-  /** E.164 for the `tel:` href. Empty while placeholder — renders inert. */
+  /** E.164, for the `tel:` href. */
   phone: string;
   /** As printed on the card. */
   phoneDisplay: string;
   icon: CrewIcon;
 };
 
-const PLACEHOLDER_NAME = "Name";
-const PLACEHOLDER_PHONE = "+91 00000 00000";
-
-function placeholder(
-  id: string,
-  role: string,
-  icon: CrewIcon,
-): CrewMember {
-  return {
-    id,
-    role,
-    name: PLACEHOLDER_NAME,
-    // Deliberately empty: an inert card is honest, a `tel:+910000000000`
-    // link is a button that dials nothing.
-    phone: "",
-    phoneDisplay: PLACEHOLDER_PHONE,
-    icon,
-  };
-}
-
-// TODO(facts): all ten names and numbers are placeholders awaiting Datadorks.
 export const crew: readonly CrewMember[] = [
-  placeholder("director", "Director", "armchair"),
-  placeholder("producer", "Producer", "clapperboard"),
-  placeholder("cinematographer", "Cinematographer", "video"),
-  placeholder("screenplay-writer", "Screenplay Writer", "pencil"),
-  placeholder("editor", "Editor", "film"),
-  placeholder("production-designer", "Production Designer", "house"),
-  placeholder("music-director", "Music Director", "music"),
-  placeholder("costume-designer", "Costume Designer", "shirt"),
-  placeholder("sound-designer", "Sound Designer", "volume-2"),
-  placeholder("vfx-supervisor", "VFX Supervisor", "box"),
+  {
+    id: "vikram-srinivas",
+    role: "Story, Screenplay, Direction & Editing",
+    name: "Vikram Srinivas",
+    phone: "+918147092570",
+    phoneDisplay: "+91 81470 92570",
+    icon: "armchair",
+  },
+  {
+    id: "varun-r-yattinahalli",
+    role: "Cinematography & Lyrics",
+    name: "Varun R Yattinahalli",
+    phone: "+916363454570",
+    phoneDisplay: "+91 63634 54570",
+    icon: "video",
+  },
+  {
+    id: "abhishek-yogesh",
+    role: "Creative Head",
+    name: "Abhishek Yogesh",
+    phone: "+916362910028",
+    phoneDisplay: "+91 63629 10028",
+    icon: "pencil",
+  },
+  {
+    id: "vikas-gowda",
+    role: "Male Lead",
+    name: "Vikas Gowda",
+    phone: "+918217533409",
+    phoneDisplay: "+91 82175 33409",
+    icon: "user",
+  },
+  {
+    id: "pooja-c",
+    role: "Female Lead",
+    name: "Pooja C",
+    phone: "+919606489837",
+    phoneDisplay: "+91 96064 89837",
+    icon: "user",
+  },
+  {
+    // No role supplied. `CrewCard` omits the label rather than rendering an
+    // empty one — see the note on `role` above.
+    id: "samarth-maidaragi",
+    name: "Samarth Maidaragi",
+    phone: "+919341068805",
+    phoneDisplay: "+91 93410 68805",
+    icon: "film",
+  },
 ] as const;
-
-/** True while any card is still placeholder — gates the pre-launch check. */
-export const crewIsPlaceholder = crew.some(
-  (m) => m.name === PLACEHOLDER_NAME || m.phone === "",
-);
 
 /* ---------------------------------------------------------------------------
    Socials — the "Let's connect" row (Phase 8).
@@ -164,25 +184,3 @@ export function isSocialConfigured(href: string): boolean {
     return false;
   }
 }
-
-/* ---------------------------------------------------------------------------
-   ⚠ STILL OPEN — must be answered before launch, not at launch.
-
-   Ten personal mobile numbers behind `tel:` links on a public page will be
-   scraped within days. Unlike an email there is no filtering layer in front of
-   a phone, and unlike an email you cannot rotate it.
-
-   Three options, in order of preference. All three keep the mockup's layout:
-
-     1. One production contact number for the whole film, plus per-person
-        email. Same ten cards, one `tel:` link instead of ten.
-     2. Keep all ten behind a "Show number" tap, so a crawler that does not
-        execute JS gets nothing. Costs one interaction.
-     3. Publish all ten as designed, with every person's informed consent
-        recorded — not assumed because they are on the crew.
-
-   `crewIsPlaceholder` above is the tripwire: while it is true, this decision
-   has not been made. This is the film-maker's call, not the developer's, but
-   it has to be an actual call, and it is far cheaper now than after the
-   numbers are indexed.
-   ------------------------------------------------------------------------ */

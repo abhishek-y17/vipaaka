@@ -10,6 +10,7 @@ import {
   Pencil,
   Phone,
   Shirt,
+  User,
   Video,
   Volume2,
 } from "lucide-react";
@@ -38,27 +39,44 @@ const ICONS = {
   shirt: Shirt,
   "volume-2": Volume2,
   box: Box,
+  user: User,
 } as const;
 
 export function CrewCard({ member }: { member: CrewMember }) {
   const Icon = ICONS[member.icon];
-  // Placeholder members carry phone: "" so the button renders inert rather
-  // than dialling a fake number.
   const callable = member.phone.length > 0;
 
   return (
     <GlassCard spotlight className="h-full">
-      <div className="flex items-center gap-4 p-5">
-        <span className="border-gold-dim/60 group-hover:border-gold ease-cinema dur-slow flex size-12 shrink-0 items-center justify-center rounded-full border transition-[transform,border-color] group-hover:rotate-180 motion-reduce:group-hover:rotate-0">
-          <Icon className="text-gold size-5" strokeWidth={1.5} aria-hidden="true" />
+      {/* Scaled up with the two-column grid — at three columns these cards
+          were a thin strip down the middle of a 1440 page. */}
+      <div className="flex items-center gap-5 p-6 sm:gap-6 sm:p-7">
+        <span className="border-gold-dim/60 group-hover:border-gold ease-cinema dur-slow flex size-14 shrink-0 items-center justify-center rounded-full border transition-[transform,border-color] group-hover:rotate-180 motion-reduce:group-hover:rotate-0 sm:size-16">
+          <Icon
+            className="text-gold size-6 sm:size-7"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="font-eyebrow text-eyebrow-sm text-gold-bright uppercase">
-            {member.role}
+          {/* Omitted entirely when there is no role, rather than rendered
+              empty. A reserved-but-blank gold label reads as a rendering
+              fault; an absent one just reads as a name. */}
+          {member.role ? (
+            <p className="font-eyebrow text-eyebrow-sm text-gold-bright uppercase">
+              {member.role}
+            </p>
+          ) : null}
+          {/* Not truncated: "Story, Screenplay, Direction & Editing" and
+              "Varun R Yattinahalli" both overflow one line in the narrow
+              column, and clipping a person's name to an ellipsis is worse
+              than letting the card grow. `h-full` on the card keeps the row
+              even. */}
+          <p className={`text-hi text-body ${member.role ? "mt-1.5" : ""}`}>
+            {member.name}
           </p>
-          <p className="text-hi text-body-sm mt-1 truncate">{member.name}</p>
-          <p className="text-mid text-meta mt-0.5 truncate">
+          <p className="text-mid text-body-sm mt-1 truncate">
             {member.phoneDisplay}
           </p>
         </div>
@@ -66,10 +84,10 @@ export function CrewCard({ member }: { member: CrewMember }) {
         {callable ? (
           <a
             href={`tel:${member.phone}`}
-            aria-label={`Call ${member.role}`}
-            className="border-gold-dim/50 text-gold hover:border-gold hover:text-gold-bright ease-cinema dur-fast flex size-10 shrink-0 items-center justify-center rounded-full border transition-colors"
+            aria-label={`Call ${member.name}`}
+            className="border-gold-dim/50 text-gold hover:border-gold hover:text-gold-bright ease-cinema dur-fast flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors sm:size-12"
           >
-            <Phone className="size-4" strokeWidth={1.75} aria-hidden="true" />
+            <Phone className="size-4 sm:size-5" strokeWidth={1.75} aria-hidden="true" />
           </a>
         ) : (
           <span
