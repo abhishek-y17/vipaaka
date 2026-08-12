@@ -1,5 +1,5 @@
 /**
- * The six people on the Contact page.
+ * The eight people on the Contact page.
  *
  * Real names, real roles, real numbers — supplied and cleared for publication
  * by the team. This file used to carry ten placeholder cards plus an open
@@ -30,9 +30,11 @@ export type CrewMember = {
   /**
    * Gold, small caps. The role leads the card — the name is secondary.
    *
-   * Optional: one member has no role yet, and the card omits the line
-   * entirely rather than reserving an empty label, which would read as a
-   * rendering fault rather than as an absence.
+   * Optional, though every member currently has one. `CrewCard` still handles
+   * the absent case by omitting the line entirely rather than reserving an
+   * empty label, which would read as a rendering fault rather than as an
+   * absence — worth keeping for the next person added before their credit is
+   * settled, which has already happened once.
    */
   role?: string;
   name: string;
@@ -69,6 +71,22 @@ export const crew: readonly CrewMember[] = [
     icon: "pencil",
   },
   {
+    id: "yash-thakur",
+    role: "Sound Assistance",
+    name: "Yash Thakur",
+    phone: "+919341260702",
+    phoneDisplay: "+91 93412 60702",
+    icon: "volume-2",
+  },
+  {
+    id: "srushti-patil",
+    role: "Original Song & Vocals",
+    name: "Srushti Patil",
+    phone: "+919886588477",
+    phoneDisplay: "+91 98865 88477",
+    icon: "music",
+  },
+  {
     id: "vikas-gowda",
     role: "Male Lead",
     name: "Vikas Gowda",
@@ -85,13 +103,14 @@ export const crew: readonly CrewMember[] = [
     icon: "user",
   },
   {
-    // No role supplied. `CrewCard` omits the label rather than rendering an
-    // empty one — see the note on `role` above.
     id: "samarth-maidaragi",
+    role: "Actor in Supporting Role",
     name: "Samarth Maidaragi",
     phone: "+919341068805",
     phoneDisplay: "+91 93410 68805",
-    icon: "film",
+    // `user`, matching the other two performers, rather than the generic
+    // `film` reel it carried while the role was unknown.
+    icon: "user",
   },
 ] as const;
 

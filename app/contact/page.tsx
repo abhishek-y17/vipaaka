@@ -20,9 +20,9 @@ export const metadata: Metadata = pageMetadata({
 });
 
 /**
- * Contact — the six-person team, then the "Let's connect" social row.
+ * Contact — the eight-person team, then the "Let's connect" social row.
  *
- * // DECISION: two columns from `lg`, one below it. Three columns fitted six
+ * // DECISION: two columns from `lg`, one below it. Three columns fitted the
  * cards evenly but made each narrow enough that the longest role, "Story,
  * Screenplay, Direction & Editing", wrapped to two cramped lines between the
  * icon ring and the call button. Two columns give it one line at 1440.
@@ -30,6 +30,10 @@ export const metadata: Metadata = pageMetadata({
  * The breakpoint is `lg`, not `sm`, because two columns at 768 produced 327px
  * cards — narrower than the 342px single column at 390 — and shredded that
  * same role into four ragged fragments. Tablet keeps the full-width card.
+ *
+ * Eight cards fill 4x2 at `lg` with no trailing gap. Any even count does; an
+ * odd one would leave a hole, which is worth remembering before adding a
+ * ninth.
  *
  * ── The header band is sized by its content, not by the viewport ────────────
  * It used to be `h-[40vh]` (52vh before that) with vertically centred

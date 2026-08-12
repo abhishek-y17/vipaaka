@@ -50,10 +50,16 @@ export function CrewCard({ member }: { member: CrewMember }) {
     <GlassCard spotlight className="h-full">
       {/* Scaled up with the two-column grid — at three columns these cards
           were a thin strip down the middle of a 1440 page. */}
-      <div className="flex items-center gap-5 p-6 sm:gap-6 sm:p-7">
-        <span className="border-gold-dim/60 group-hover:border-gold ease-cinema dur-slow flex size-14 shrink-0 items-center justify-center rounded-full border transition-[transform,border-color] group-hover:rotate-180 motion-reduce:group-hover:rotate-0 sm:size-16">
+      {/* Ring, button and padding step DOWN below `sm`. The card is a
+          three-column row — ring, text, call button — so on a 360px phone the
+          fixed furniture left the text about 124px, and the longest role
+          ("Story, Screenplay, Direction & Editing") shattered into four
+          fragments. Trimming the furniture returns roughly 30px to the text
+          column without touching the scaled-up desktop card. */}
+      <div className="flex items-center gap-4 p-5 sm:gap-6 sm:p-7">
+        <span className="border-gold-dim/60 group-hover:border-gold ease-cinema dur-slow flex size-12 shrink-0 items-center justify-center rounded-full border transition-[transform,border-color] group-hover:rotate-180 motion-reduce:group-hover:rotate-0 sm:size-16">
           <Icon
-            className="text-gold size-6 sm:size-7"
+            className="text-gold size-5 sm:size-7"
             strokeWidth={1.5}
             aria-hidden="true"
           />
@@ -85,7 +91,7 @@ export function CrewCard({ member }: { member: CrewMember }) {
           <a
             href={`tel:${member.phone}`}
             aria-label={`Call ${member.name}`}
-            className="border-gold-dim/50 text-gold hover:border-gold hover:text-gold-bright ease-cinema dur-fast flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors sm:size-12"
+            className="border-gold-dim/50 text-gold hover:border-gold hover:text-gold-bright ease-cinema dur-fast flex size-10 shrink-0 items-center justify-center rounded-full border transition-colors sm:size-12"
           >
             <Phone className="size-4 sm:size-5" strokeWidth={1.75} aria-hidden="true" />
           </a>
