@@ -13,12 +13,20 @@ import { OG_IMAGES, pageMetadata } from "@/lib/seo";
  * wrong for a hero and exactly right for a link preview.
  */
 /**
- * Regenerate every 15 minutes so the prerendered HTML catches up with the
- * release on its own. The page also corrects itself on the client, so nobody
- * ever sees a stale lock — this is what stops the SERVED markup being wrong
- * for search engines and no-JS readers in the window after midnight.
+ * Rendered per request, not cached.
+ *
+ * This used to be `revalidate = 900`, which regenerated the prerendered HTML
+ * every 15 minutes so it caught up with the release on its own. Around the
+ * release itself that window is too wide: a cold visitor could be served up to
+ * 15 minutes of stale pre-release markup — poster, countdown, no player, no
+ * review form — and only see the real page once hydration corrected it. On
+ * release day the served HTML has to be right the first time.
+ *
+ * The client-side correction in `page.tsx` stays regardless; this only removes
+ * the stale-HTML window in front of it. Worth reinstating a cache once the
+ * release has settled — the page is static again by then.
  */
-export const revalidate = 900;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = pageMetadata({
   title: "Film",

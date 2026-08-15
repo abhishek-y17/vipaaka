@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { FilmStage } from "@/components/film/FilmStage";
+import { HeadphonePrompt } from "@/components/film/HeadphonePrompt";
 import { GoldRule } from "@/components/motion/GoldRule";
 import { Reveal } from "@/components/motion/Reveal";
 import { feature } from "@/content/trailers";
@@ -141,8 +142,28 @@ export default function FilmPage() {
           </div>
         </Reveal>
 
-        {/* Poster + countdown until `feature.url` is real, player after.
-            The swap is data, not code — see FilmStage. */}
+        {/* /film only, and mounted here rather than in the layout so it can
+            never leak onto another route. Its "seen" flag is localStorage —
+            it makes no Supabase call and creates no anonymous session. */}
+        <HeadphonePrompt
+          onOpen={() => {
+            // Pause anything already playing underneath. postMessage rather
+            // than an imperative ref because the player may not be mounted at
+            // all before release, and a ref threaded through FilmStage would
+            // be null on exactly the days this runs most.
+            document
+              .querySelectorAll<HTMLIFrameElement>('iframe[src*="youtube"]')
+              .forEach((f) =>
+                f.contentWindow?.postMessage(
+                  '{"event":"command","func":"pauseVideo","args":[]}',
+                  "*",
+                ),
+              );
+          }}
+        />
+
+        {/* Poster + countdown until `feature.url` is real AND the clock has
+            passed RELEASE_AT — see FilmStage. */}
         <Reveal delay={0.08}>
           <div className="mt-6">
             <FilmStage url={feature.url} />

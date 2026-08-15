@@ -72,8 +72,13 @@ export type FeaturePresentation = {
   poster: string | null;
 };
 
-// TODO(facts): the film's YouTube URL.
+// Real, confirmed. Tracking param stripped — `?si=` identifies the share, not
+// the video, and this string is the one thing that publishes the film.
+//
+// ⚠ Setting this does NOT release the film on its own. `FilmStage` gates the
+// player on RELEASE_AT as well, so the poster and countdown hold until 11:11
+// IST regardless of what is pasted here. Both conditions must be true.
 export const feature: FeaturePresentation = {
-  url: "",
+  url: "https://youtu.be/QKnYAVjuU9I",
   poster: null,
 } as const;

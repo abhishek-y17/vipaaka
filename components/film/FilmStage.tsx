@@ -1,10 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 
 import { ReleaseCountdown } from "@/components/film/ReleaseCountdown";
 import { YTPlayer } from "@/components/player/YTPlayer";
+import { RELEASE_AT } from "@/content/film";
 import { stills } from "@/content/stills";
+import { useIsomorphicLayoutEffect } from "@/lib/motion";
 import { extractVideoId } from "@/lib/youtube";
 
 /**
@@ -31,7 +34,40 @@ import { extractVideoId } from "@/lib/youtube";
 export function FilmStage({ url }: { url: string }) {
   const hasVideo = Boolean(extractVideoId(url));
 
-  if (hasVideo) return <YTPlayer url={url} />;
+  /**
+   * TWO conditions, not one. A real `feature.url` is necessary but not
+   * sufficient — pasting the URL in must not publish the film early, so the
+   * clock has to agree.
+   *
+   * `released` starts `false` and is corrected in a layout effect, exactly as
+   * the review lock in `page.tsx` does, and for the same reason recorded
+   * there: reading `Date.now()` in the render body of a prerendered route
+   * evaluates it at BUILD time. That would bake "not released" into the HTML
+   * and keep the film hidden after 11:11 with nothing on the page to say why
+   * — the worst failure available today. Starting from a constant makes the
+   * first client render identical to the server's by construction, and the
+   * correction lands before paint.
+   *
+   * `ReleaseCountdown` is driven by the same `RELEASE_AT`, so the countdown
+   * cannot reach zero while the poster is still showing: the tick that takes
+   * the clock past the instant is the same one that flips this.
+   */
+  const [released, setReleased] = useState(false);
+  useIsomorphicLayoutEffect(() => {
+    const now = Date.now();
+    const ms = RELEASE_AT.getTime() - now;
+    if (ms <= 0) {
+      setReleased(true);
+      return;
+    }
+    // Someone already on the page when the clock rolls over gets the player
+    // without refreshing — a spent countdown sitting at 00:00:00 above a
+    // poster is the one state this page must never be caught in.
+    const id = window.setTimeout(() => setReleased(true), ms + 250);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  if (hasVideo && released) return <YTPlayer url={url} />;
 
   return (
     <div>
