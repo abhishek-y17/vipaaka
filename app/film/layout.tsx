@@ -13,20 +13,29 @@ import { OG_IMAGES, pageMetadata } from "@/lib/seo";
  * wrong for a hero and exactly right for a link preview.
  */
 /**
- * Rendered per request, not cached.
+ * Regenerate every 15 minutes so the prerendered HTML catches up with the
+ * release on its own. The page also corrects itself on the client, so nobody
+ * ever sees a stale lock — this is what stops the SERVED markup being wrong
+ * for search engines and no-JS readers in the window after release.
  *
- * This used to be `revalidate = 900`, which regenerated the prerendered HTML
- * every 15 minutes so it caught up with the release on its own. Around the
- * release itself that window is too wide: a cold visitor could be served up to
- * 15 minutes of stale pre-release markup — poster, countdown, no player, no
- * review form — and only see the real page once hydration corrected it. On
- * release day the served HTML has to be right the first time.
+ * ⚠ Was briefly `dynamic = "force-dynamic"` around the release instant, to
+ * close the 15-minute stale-HTML window against a cold visitor. That made
+ * this route a serverless function invoked on every request instead of a
+ * prerendered page, and it broke production: Vercel returned a hard 500 (its
+ * own generic fallback page, not even a Next error boundary) on every load,
+ * confirmed to be specific to this route — every other page on the site
+ * stayed up. It was never exercised against real Vercel infrastructure
+ * before shipping, only against a local `next start`, which does not
+ * reproduce how Vercel invokes a dynamic route.
  *
- * The client-side correction in `page.tsx` stays regardless; this only removes
- * the stale-HTML window in front of it. Worth reinstating a cache once the
- * release has settled — the page is static again by then.
+ * Reverted the moment the release instant passed, since the stale-window
+ * problem it existed for no longer applies going forward — a build taken
+ * after RELEASE_AT is static content that is already correct. If a future
+ * release ever needs that guarantee again, prefer a short numeric
+ * `revalidate` (e.g. 60) over `force-dynamic`, and load-test it against a
+ * real preview deployment first.
  */
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 export const metadata: Metadata = pageMetadata({
   title: "Film",
