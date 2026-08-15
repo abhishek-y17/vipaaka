@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { ReleaseCountdown } from "@/components/film/ReleaseCountdown";
 import { YTPlayer } from "@/components/player/YTPlayer";
-import { RELEASE_AT } from "@/content/film";
+import { PLAYER_AT } from "@/content/film";
 import { stills } from "@/content/stills";
 import { useIsomorphicLayoutEffect } from "@/lib/motion";
 import { extractVideoId } from "@/lib/youtube";
@@ -39,6 +39,11 @@ export function FilmStage({ url }: { url: string }) {
    * sufficient — pasting the URL in must not publish the film early, so the
    * clock has to agree.
    *
+   * The clock here is `PLAYER_AT` (11:08), NOT `RELEASE_AT` (11:11). Reviews
+   * are pinned to RELEASE_AT because the database policy carries that same
+   * instant; the player is not, because playing a video writes nothing. See
+   * the note on PLAYER_AT in content/film.ts before merging them.
+   *
    * `released` starts `false` and is corrected in a layout effect, exactly as
    * the review lock in `page.tsx` does, and for the same reason recorded
    * there: reading `Date.now()` in the render body of a prerendered route
@@ -48,14 +53,14 @@ export function FilmStage({ url }: { url: string }) {
    * first client render identical to the server's by construction, and the
    * correction lands before paint.
    *
-   * `ReleaseCountdown` is driven by the same `RELEASE_AT`, so the countdown
-   * cannot reach zero while the poster is still showing: the tick that takes
-   * the clock past the instant is the same one that flips this.
+   * The countdown runs to RELEASE_AT but is never seen expiring: it sits
+   * inside the poster block this replaces, so it leaves the page at 11:08
+   * with three minutes still on the clock rather than resting at 00:00:00.
    */
   const [released, setReleased] = useState(false);
   useIsomorphicLayoutEffect(() => {
     const now = Date.now();
-    const ms = RELEASE_AT.getTime() - now;
+    const ms = PLAYER_AT.getTime() - now;
     if (ms <= 0) {
       setReleased(true);
       return;

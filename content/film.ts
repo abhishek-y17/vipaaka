@@ -19,7 +19,8 @@ import type { StillId } from "@/content/stills";
  * The single source for BOTH the countdown and the review lock. Two
  * independent date checks are two things that can drift apart, and the one
  * that drifts is always the one nobody is looking at. The database's insert
- * policy carries the same instant (`now() >= '2026-08-15 00:00:00+05:30'`) —
+ * policy carries the same instant (`now() >= '2026-08-15 11:11:00+05:30'`, i.e.
+ * 05:41Z) —
  * that one is the actual enforcement; this one is only the experience.
  *
  * 11:11 IST, not midnight. If these two ever disagree, the failure that
@@ -28,6 +29,25 @@ import type { StillId } from "@/content/stills";
  * either a lock that lingers or a form that is simply absent.
  */
 export const RELEASE_AT = new Date("2026-08-15T11:11:00+05:30");
+
+/**
+ * When the PLAYER appears. Deliberately three minutes before `RELEASE_AT`.
+ *
+ * ⚠ These are two constants on purpose and must not be merged back. The
+ * database's insert policy carries `RELEASE_AT` exactly
+ * (2026-08-15 05:41:00+00), so the review form must never open before it — a
+ * form that accepts a review, submits it, and is rejected with 42501 is the
+ * worst state this page can reach. Moving `RELEASE_AT` earlier to make the
+ * film start earlier would do precisely that.
+ *
+ * The player has no such coupling: nothing is written when a video plays, so
+ * it can open whenever the film-maker wants. Only `FilmStage` reads this.
+ *
+ * The countdown still runs to `RELEASE_AT`, but it is never seen expiring —
+ * it lives inside the poster block that the player replaces, so it leaves the
+ * page at 11:08 with three minutes still on it rather than sitting at zero.
+ */
+export const PLAYER_AT = new Date("2026-08-15T11:08:00+05:30");
 
 export type FilmInfo = {
   studio: string;
